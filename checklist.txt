@@ -2,7 +2,7 @@
 
 ## Xác thực & Phân quyền [DONE]
 - [x] Đăng nhập duy nhất bằng Google (Supabase Auth).
-- [x] Phân quyền Super Admin: kurobakaito146@gmail.com (Quyền can thiệp toàn hệ thống).
+- [x] Phân quyền Super Admin (Quyền can thiệp toàn hệ thống).
 - [x] Cơ chế Claim Profile: Mỗi tài khoản Google chỉ được Claim 1 profile cầu thủ duy nhất (Xác minh qua Team Password).
 - [x] Tự động ẩn các nút tương tác (Edit/Vote) đối với Guest (Chưa login).
 
