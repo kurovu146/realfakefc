@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-pl-purple: #38003c;
+  --color-pl-green: #00ff85;
+  --color-pl-pink: #ff005a;
+  --color-pl-gray: #e5ebf1;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: '"Barlow Condensed"', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-pl-purple);
+  background-color: #f3f4f6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-transform: uppercase;
+}
