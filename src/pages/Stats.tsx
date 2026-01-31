@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Player, Match, MatchStat } from '@/types/database';
+import type { Player } from '@/types/database';
 
 interface PlayerStats extends Player {
   stats: {
