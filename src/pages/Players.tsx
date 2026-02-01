@@ -25,10 +25,9 @@ export default function Players() {
     
     if (error) console.error('Error:', error);
     if (data) {
-        // Luôn fetch mới bằng cách force re-render với key mới nếu cần
         const playersWithFreshImages = data.map(p => ({
             ...p,
-            image: p.image ? `${p.image}${p.image.includes('?') ? '&' : '?'}t=${Date.now()}` : p.image
+            image: p.image ? `${p.image}${p.image.includes('?') ? '&' : '?'}t=${new Date().getTime()}` : p.image
         }));
         setPlayers(playersWithFreshImages);
     }
@@ -159,7 +158,7 @@ export default function Players() {
                       <div className="flex flex-col items-center">
                           <div className="relative group">
                               <div className="w-32 h-32 rounded-full overflow-hidden border-8 border-pl-gray bg-gray-50 shadow-inner">
-                                  <img src={editingPlayer.image || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" />
+                                  <img src={editingPlayer.image || 'https://placehold.co/150/38003c/ffffff?text=Ava'} className="w-full h-full object-cover" />
                               </div>
                               {(user?.email === editingPlayer.email || isAdmin) && (
                                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold uppercase text-center p-2">
@@ -216,7 +215,7 @@ export default function Players() {
                                       </div>
                                   ))}
                               </div>
-                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Close Profile</button>
+                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-100 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Close Profile</button>
                           </div>
                       )}
                   </div>

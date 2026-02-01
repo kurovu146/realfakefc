@@ -20,7 +20,7 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
       {/* Image Container */}
       <div className="relative z-10 pt-4 px-4 flex justify-center items-end h-64 overflow-hidden bg-gray-50">
         <img 
-          src={player.image || 'https://via.placeholder.com/250x250?text=Player'} 
+          src={player.image || 'https://placehold.co/250x250/38003c/ffffff?text=Player'} 
           alt={player.name} 
           className="h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
         />
