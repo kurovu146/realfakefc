@@ -105,12 +105,47 @@ export default function Admin() {
   }
 
   // --- Matches Logic ---
+  async function sendPushNotification(opponent: string, date: string, time: string) {
+      const appId = import.meta.env.VITE_ONESIGNAL_APP_ID;
+      const apiKey = import.meta.env.VITE_ONESIGNAL_API_KEY;
+      
+      if (!appId || !apiKey) return;
+
+      const options = {
+        method: 'POST',
+        headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${apiKey}`
+        },
+        body: JSON.stringify({
+            app_id: appId,
+            included_segments: ['Total Subscriptions'],
+            headings: { en: "⚽ New Match Announced!" },
+            contents: { en: `RealFake FC vs ${opponent} on ${new Date(date).toLocaleDateString()} at ${time}. Vote now!` },
+            url: window.location.origin
+        })
+      };
+
+      try {
+          await fetch('https://onesignal.com/api/v1/notifications', options);
+          toast.success('Push notification sent to squad!');
+      } catch (err) {
+          console.error('Push error', err);
+          toast.error('Failed to send push notification');
+      }
+  }
+
   async function saveMatch(e: React.FormEvent) {
     e.preventDefault();
     if (!isAdmin) return;
     setLoading(true);
     const matchData = { ...editingMatch, season: editingMatch.season || 2026 };
     let error;
+    
+    // Nếu là tạo mới và là trận sắp tới -> Gửi thông báo
+    const isNew = !editingMatch.id;
+
     if (editingMatch.id) {
        const res = await supabase.from('matches').update(matchData).eq('id', editingMatch.id);
        error = res.error;
@@ -118,8 +153,17 @@ export default function Admin() {
        const res = await supabase.from('matches').insert(matchData);
        error = res.error;
     }
-    if (error) toast.error(error.message);
-    else { toast.success('Matchday confirmed'); setEditingMatch({ season: 2026, status: 'Upcoming' }); await fetchData(); }
+
+    if (error) {
+        toast.error(error.message);
+    } else { 
+        toast.success('Matchday confirmed'); 
+        if (isNew && matchData.status === 'Upcoming' && matchData.opponent && matchData.date) {
+            await sendPushNotification(matchData.opponent, matchData.date, matchData.time || '');
+        }
+        setEditingMatch({ season: 2026, status: 'Upcoming' }); 
+        await fetchData(); 
+    }
     setLoading(false);
   }
 
@@ -163,18 +207,6 @@ export default function Admin() {
     setLoading(false);
   }
 
-  // --- Helper for Number Input ---
-  const NumberControl = ({ label, value, onChange, color }: any) => (
-      <div className={`flex flex-col items-center bg-white p-3 rounded-2xl border-2 ${color} transition-all`}>
-          <span className="text-[10px] font-bold uppercase tracking-widest mb-2 opacity-60">{label}</span>
-          <div className="flex items-center gap-3">
-              <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold text-gray-500 transition-colors">-</button>
-              <span className="text-xl font-heading font-bold w-6 text-center">{value}</span>
-              <button type="button" onClick={() => onChange(value + 1)} className="w-8 h-8 rounded-full bg-pl-purple text-white hover:bg-pl-pink flex items-center justify-center font-bold transition-colors">+</button>
-          </div>
-      </div>
-  );
-
   if (authLoading) return <div className="text-center py-20 font-heading text-pl-purple uppercase animate-pulse">Verifying master access...</div>;
 
   if (!isAdmin) {
@@ -215,7 +247,7 @@ export default function Admin() {
 
       {loading && <div className="fixed top-4 right-4 bg-pl-green text-pl-purple font-bold px-4 py-2 rounded shadow animate-pulse z-50 text-[10px]">SYNCING...</div>}
 
-      {/* TEAM SETTINGS TAB (Keep as is) */}
+      {/* TEAM SETTINGS TAB */}
       {activeTab === 'settings' && (
           <div className="max-w-2xl mx-auto bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-50">
               <h3 className="text-2xl font-heading font-bold mb-8 uppercase border-b pb-4">General Team Identity</h3>
@@ -318,7 +350,7 @@ export default function Admin() {
       {activeTab === 'matches' && (
           <div className="grid md:grid-cols-12 gap-8 items-start">
              <div className="md:col-span-4 bg-white p-8 rounded-3xl shadow-xl border border-gray-50 h-fit sticky top-24">
-               {/* Match Form (Keep as is) */}
+               {/* Match Form */}
                <h3 className="text-xl font-heading font-bold mb-6 uppercase border-b border-gray-50 pb-4">New Matchday</h3>
                <form onSubmit={saveMatch} className="space-y-4">
                  <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-sm font-bold outline-none" placeholder="Rival Name" value={editingMatch.opponent || ''} onChange={e => setEditingMatch({...editingMatch, opponent: e.target.value})} required />
@@ -366,63 +398,44 @@ export default function Admin() {
           </div>
       )}
 
-      {/* NEW STATS MODAL UI */}
+      {/* STATS MODAL ... (keep existing) */}
       {statsMatchId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-md">
-            <div className="bg-white rounded-[2.5rem] shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border-t-[12px] border-pl-pink relative">
-                <div className="p-8 border-b border-gray-50 flex justify-between items-center sticky top-0 bg-white z-10">
-                    <h3 className="text-3xl font-heading font-bold text-pl-purple uppercase leading-none">Match Ledger</h3>
+            <div className="bg-white rounded-[2.5rem] shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border-t-8 border-pl-pink relative">
+                <div className="p-8 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+                    <h3 className="text-3xl font-heading font-bold text-pl-purple uppercase">Match Records</h3>
                     <button onClick={() => setStatsMatchId(null)} className="text-gray-300 hover:text-red-500 text-4xl leading-none cursor-pointer transition-colors">&times;</button>
                 </div>
                 <div className="p-8">
                     <form onSubmit={addStat} className="bg-pl-gray/10 p-6 rounded-3xl mb-8 border border-gray-100">
-                        <h4 className="font-bold mb-4 text-[10px] uppercase text-gray-400 tracking-[0.2em]">Add Statistics Entry</h4>
-                        
-                        <div className="mb-6">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Select Player</label>
-                            <select className="border-2 border-white shadow-sm p-4 w-full rounded-2xl cursor-pointer bg-white font-bold text-sm outline-none focus:border-pl-pink transition-all" value={newStat.player_id || ''} onChange={e => setNewStat({...newStat, player_id: Number(e.target.value)})} required>
-                                <option value="">-- Choose Player --</option>
-                                {players.map(p => (<option key={p.id} value={p.id}>{p.number}. {p.name}</option>))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <select className="border-2 border-white shadow-sm p-3 rounded-xl cursor-pointer bg-white font-bold text-sm outline-none" value={newStat.player_id || ''} onChange={e => setNewStat({...newStat, player_id: Number(e.target.value)})} required>
+                                <option value="">Player</option>{players.map(p => (<option key={p.id} value={p.id}>{p.number}. {p.name}</option>))}
                             </select>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                            <NumberControl label="Goals" value={newStat.goals || 0} onChange={(v: number) => setNewStat({...newStat, goals: v})} color="border-pl-purple/20 text-pl-purple" />
-                            <NumberControl label="Assists" value={newStat.assists || 0} onChange={(v: number) => setNewStat({...newStat, assists: v})} color="border-pl-green/20 text-pl-green" />
-                            <NumberControl label="Own Goals" value={newStat.own_goals || 0} onChange={(v: number) => setNewStat({...newStat, own_goals: v})} color="border-red-200 text-red-500" />
-                        </div>
-
-                        <label className="flex items-center gap-4 cursor-pointer bg-white p-4 rounded-2xl border-2 border-white shadow-sm hover:border-pl-pink transition-all mb-6">
-                            <input type="checkbox" checked={newStat.is_motm || false} onChange={e => setNewStat({...newStat, is_motm: e.target.checked})} className="w-6 h-6 cursor-pointer accent-pl-pink rounded-md" />
-                            <div className="flex flex-col">
-                                <span className="font-bold text-sm uppercase tracking-widest text-pl-purple">Man of the Match</span>
-                                <span className="text-[10px] text-gray-400">Award for outstanding performance</span>
+                            <div className="flex gap-2">
+                                <input type="number" placeholder="Goals" className="border-2 border-white shadow-sm p-3 w-full rounded-xl bg-white font-mono font-bold" value={newStat.goals || 0} onChange={e => setNewStat({...newStat, goals: Number(e.target.value)})} />
+                                <input type="number" placeholder="Assists" className="border-2 border-white shadow-sm p-3 w-full rounded-xl bg-white font-mono font-bold" value={newStat.assists || 0} onChange={e => setNewStat({...newStat, assists: Number(e.target.value)})} />
                             </div>
-                        </label>
-
-                        <button className="bg-pl-pink text-white font-bold py-4 px-4 rounded-2xl w-full hover:bg-pl-purple cursor-pointer shadow-xl uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95">Record Entry</button>
+                            <div className="flex gap-3 items-center md:col-span-2">
+                                <label className="flex items-center gap-3 cursor-pointer bg-white px-5 py-3 rounded-xl border-2 border-white shadow-sm flex-grow transition-all hover:border-pl-pink">
+                                    <input type="checkbox" checked={newStat.is_motm || false} onChange={e => setNewStat({...newStat, is_motm: e.target.checked})} className="w-5 h-5 cursor-pointer accent-pl-pink" />
+                                    <span className="font-bold text-xs uppercase tracking-widest">MOTM</span>
+                                </label>
+                                <input type="number" placeholder="OG" className="border-2 border-white shadow-sm p-3 w-1/3 rounded-xl bg-white font-mono" value={newStat.own_goals || 0} onChange={e => setNewStat({...newStat, own_goals: Number(e.target.value)})} />
+                            </div>
+                        </div>
+                        <button className="bg-pl-pink text-white font-bold py-4 px-4 rounded-2xl w-full hover:bg-pl-purple cursor-pointer shadow-xl uppercase text-[10px] tracking-widest">Record Entry</button>
                     </form>
-                    
                     <div className="space-y-3">
-                        <h4 className="font-bold text-[10px] uppercase text-gray-400 tracking-[0.2em] ml-2 mb-4">Current Match Records</h4>
                         {currentMatchStats.map(s => (
-                            <div key={s.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-50 shadow-sm group hover:border-pl-pink transition-all">
+                            <div key={s.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-50 shadow-sm group hover:border-pl-pink">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-pl-gray/20 flex items-center justify-center font-heading font-bold text-pl-purple text-xl">{s.player?.number}</div>
-                                    <div>
-                                        <div className="font-bold text-sm">{s.player?.name}</div>
-                                        <div className="flex gap-2 mt-1">
-                                            {s.goals > 0 && <span className="text-[9px] font-bold bg-pl-purple text-white px-2 py-1 rounded-lg uppercase tracking-tighter shadow-sm">⚽ {s.goals}</span>}
-                                            {s.assists > 0 && <span className="text-[9px] font-bold bg-pl-green text-pl-purple px-2 py-1 rounded-lg uppercase tracking-tighter shadow-sm">👟 {s.assists}</span>}
-                                            {s.is_motm && <span className="text-[9px] font-bold bg-pl-pink text-white px-2 py-1 rounded-lg uppercase tracking-tighter shadow-sm">🏆 MOTM</span>}
-                                            {s.own_goals > 0 && <span className="text-[9px] font-bold bg-red-100 text-red-500 px-2 py-1 rounded-lg uppercase tracking-tighter border border-red-200">🤡 OG</span>}
-                                        </div>
-                                    </div>
+                                    <div className="w-10 h-10 rounded-full bg-pl-gray/20 flex items-center justify-center font-heading font-bold text-pl-purple text-lg">{s.player?.number}</div>
+                                    <div><div className="font-bold text-sm">{s.player?.name}</div><div className="flex gap-2 mt-1">{s.goals > 0 && <span className="text-[8px] font-bold bg-pl-purple text-white px-1.5 py-0.5 rounded">G:{s.goals}</span>}{s.assists > 0 && <span className="text-[8px] font-bold bg-pl-green text-pl-purple px-1.5 py-0.5 rounded">A:{s.assists}</span>}{s.is_motm && <span className="text-[8px] font-bold bg-pl-pink text-white px-1.5 py-0.5 rounded">MOTM</span>}</div></div>
                                 </div>
-                                <button onClick={() => deleteStat(s.id)} className="text-gray-300 hover:text-red-500 p-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                <button onClick={() => deleteStat(s.id)} className="text-gray-300 hover:text-red-500 p-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                             </div>
                         ))}
-                        {currentMatchStats.length === 0 && <p className="text-center py-10 text-gray-300 italic text-sm border-2 border-dashed border-gray-50 rounded-3xl">No records found for this match.</p>}
                     </div>
                 </div>
             </div>
