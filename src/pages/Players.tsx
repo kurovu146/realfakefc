@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Player } from '@/types/database';
 import PlayerCard from '@/components/PlayerCard';
@@ -38,10 +38,6 @@ export default function Players() {
   useEffect(() => {
     fetchPlayers();
   }, [fetchPlayers]);
-
-  const hasClaimed = useMemo(() => {
-      return players.some(p => p.email === user?.email);
-  }, [players, user]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {

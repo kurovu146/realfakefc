@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { Match, Player, MatchStat } from '@/types/database';
+import type { Match, Player } from '@/types/database';
 import PlayerCard from '@/components/PlayerCard';
 import MatchFixture from '@/components/MatchFixture';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, Mail, Phone, Calendar, Quote } from 'lucide-react';
+import { MapPin, Clock, Mail, Quote } from 'lucide-react';
 
 interface PlayerWithStats extends Player {
     calculatedStats: {
