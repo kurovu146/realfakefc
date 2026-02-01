@@ -16,28 +16,22 @@ export default function Fixtures() {
       .select('*, match_votes(*, player:players(*))')
       .eq('season', season);
     
-    if (data) {
-        // Sắp xếp logic phức tạp trong JS
-        const sorted = data.sort((a, b) => {
-            // Nếu cả 2 đều Upcoming -> Gần nhất lên đầu (Ascending by date)
-            if (a.status === 'Upcoming' && b.status === 'Upcoming') {
-                return new Date(a.date).getTime() - new Date(b.date).getTime();
-            }
-            // Nếu a Upcoming, b Finished -> a lên đầu
-            if (a.status === 'Upcoming' && b.status !== 'Upcoming') return -1;
-            if (a.status !== 'Upcoming' && b.status === 'Upcoming') return 1;
-            
-            // Nếu cả 2 đều đã đấu xong -> Mới nhất lên đầu (Descending by date)
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-        });
-        setMatches(sorted);
-    }
+    if (data) setMatches(data);
     setLoading(false);
   }, [season]);
 
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+
+  // Phân loại trận đấu
+  const upcomingMatches = matches
+    .filter(m => m.status === 'Upcoming')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Gần nhất lên đầu
+
+  const finishedMatches = matches
+    .filter(m => m.status === 'Finished' || m.status === 'Live')
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Mới nhất lên đầu
 
   return (
     <div className="bg-gray-50 min-h-screen py-10 pb-20">
@@ -50,7 +44,7 @@ export default function Fixtures() {
           <select 
             value={season} 
             onChange={(e) => setSeason(Number(e.target.value))}
-            className="border-2 border-pl-gray rounded p-2 font-heading font-bold text-pl-purple cursor-pointer bg-white"
+            className="border-2 border-pl-gray rounded-xl p-3 font-heading font-bold text-pl-purple cursor-pointer bg-white outline-none focus:border-pl-purple"
           >
             <option value={2026}>Season 2026</option>
             <option value={2025}>Season 2025</option>
@@ -60,25 +54,50 @@ export default function Fixtures() {
         {loading ? (
             <div className="text-center py-20 animate-pulse font-heading text-2xl text-gray-400 uppercase">Preparing Matchday...</div>
         ) : (
-            <div className="space-y-6 max-w-4xl mx-auto">
-              {matches.length > 0 ? (
-                  <>
-                    {/* UPCOMING SECTION HEADER */}
-                    {matches.some(m => m.status === 'Upcoming') && (
-                        <h2 className="text-xl font-bold uppercase text-pl-pink border-l-4 border-pl-pink pl-3 mb-4">Upcoming Matches</h2>
-                    )}
-                    
-                    {matches.map(match => (
-                        <Link key={match.id} to={`/fixtures/${match.id}`} className="block transition-transform hover:scale-[1.01]">
-                            <MatchFixture match={match} />
-                        </Link>
-                    ))}
-                  </>
-              ) : (
-                 <div className="text-center bg-white p-20 rounded-xl border-2 border-dashed border-gray-200">
-                    <p className="text-gray-400 font-heading text-2xl uppercase italic">No data found for this season.</p>
-                 </div>
-              )}
+            <div className="space-y-12 max-w-4xl mx-auto">
+              
+              {/* --- UPCOMING SECTION --- */}
+              <div>
+                  <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
+                      <span className="w-2 h-8 bg-pl-pink rounded-full"></span>
+                      Upcoming Fixtures
+                  </h2>
+                  {upcomingMatches.length > 0 ? (
+                      <div className="space-y-4">
+                          {upcomingMatches.map(match => (
+                              <Link key={match.id} to={`/fixtures/${match.id}`} className="block transition-transform hover:scale-[1.01]">
+                                  <MatchFixture match={match} />
+                              </Link>
+                          ))}
+                      </div>
+                  ) : (
+                      <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
+                          <p className="text-gray-400 font-bold uppercase text-sm">No upcoming matches scheduled</p>
+                      </div>
+                  )}
+              </div>
+
+              {/* --- RESULTS SECTION --- */}
+              <div>
+                  <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
+                      <span className="w-2 h-8 bg-pl-green rounded-full"></span>
+                      Match Results
+                  </h2>
+                  {finishedMatches.length > 0 ? (
+                      <div className="space-y-4">
+                          {finishedMatches.map(match => (
+                              <Link key={match.id} to={`/fixtures/${match.id}`} className="block transition-transform hover:scale-[1.01]">
+                                  <MatchFixture match={match} />
+                              </Link>
+                          ))}
+                      </div>
+                  ) : (
+                      <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
+                          <p className="text-gray-400 font-bold uppercase text-sm">No match results yet</p>
+                      </div>
+                  )}
+              </div>
+
             </div>
         )}
       </div>

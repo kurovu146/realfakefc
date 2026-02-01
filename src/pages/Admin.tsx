@@ -18,7 +18,7 @@ export default function Admin() {
   const [uploading, setUploading] = useState(false);
 
   // Settings State
-  const [siteSettings, setSiteSettings] = useState({ team_name: '', logo_url: '', banner_url: '' });
+  const [siteSettings, setSiteSettings] = useState({ team_name: '', logo_url: '', banner_url: '', contact_phone: '' });
 
   const [statsMatchId, setStatsMatchId] = useState<number | null>(null);
   const [currentMatchStats, setCurrentMatchStats] = useState<MatchStat[]>([]);
@@ -223,6 +223,11 @@ export default function Admin() {
                   <div>
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Team Display Name</label>
                       <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-lg font-heading font-bold outline-none" value={siteSettings.team_name} onChange={e => setSiteSettings({...siteSettings, team_name: e.target.value})} />
+                  </div>
+
+                  <div>
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Contact Phone Number</label>
+                      <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-lg font-mono font-bold outline-none" placeholder="e.g. 0912345678" value={siteSettings.contact_phone || ''} onChange={e => setSiteSettings({...siteSettings, contact_phone: e.target.value})} />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-8">
