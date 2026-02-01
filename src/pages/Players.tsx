@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Player } from '@/types/database';
 import PlayerCard from '@/components/PlayerCard';
 import { useAuth } from '@/context/AuthContext';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function Players() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -11,9 +12,9 @@ export default function Players() {
   const [loading, setLoading] = useState(true);
   const { user, isAdmin, isWhitelisted } = useAuth();
 
-  // Edit State
   const [editingPlayer, setEditingPlayer] = useState<Partial<Player> | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -22,12 +23,14 @@ export default function Players() {
       .select('*')
       .order('number', { ascending: true });
     
-    if (error) {
-      console.error('Error fetching players:', error);
-    }
-
+    if (error) console.error('Error:', error);
     if (data) {
-       setPlayers(data);
+        // Luôn fetch mới bằng cách force re-render với key mới nếu cần
+        const playersWithFreshImages = data.map(p => ({
+            ...p,
+            image: p.image ? `${p.image}${p.image.includes('?') ? '&' : '?'}t=${Date.now()}` : p.image
+        }));
+        setPlayers(playersWithFreshImages);
     }
     setLoading(false);
   }, []);
@@ -36,24 +39,56 @@ export default function Players() {
     fetchPlayers();
   }, [fetchPlayers]);
 
+  const hasClaimed = useMemo(() => {
+      return players.some(p => p.email === user?.email);
+  }, [players, user]);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      if (!event.target.files || event.target.files.length === 0) return;
+      
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${editingPlayer?.id}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setEditingPlayer(prev => prev ? { ...prev, image: `${publicUrl}?t=${new Date().getTime()}` } : null);
+      toast.success('Avatar uploaded! Click Update to save.');
+    } catch (error: any) {
+      toast.error('Upload failed: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !isWhitelisted) return;
-    if (!editingPlayer || !editingPlayer.id) return;
+    if (!user || !isWhitelisted || !editingPlayer || !editingPlayer.id) return;
 
-    // Phân quyền: Chính chủ HOẶC Admin mới được lưu
-    const isOwner = user.email === editingPlayer.email;
-    if (!isOwner && !isAdmin) {
-        alert("Permission denied.");
+    if (user.email !== editingPlayer.email && !isAdmin) {
+        toast.error("Permission denied.");
         return;
     }
 
     setSaveLoading(true);
+    const cleanImageUrl = editingPlayer.image?.split('?')[0];
+
     const { error } = await supabase
         .from('players')
         .update({
             nickname: editingPlayer.nickname,
-            image: editingPlayer.image,
+            image: cleanImageUrl,
             height: editingPlayer.height,
             weight: editingPlayer.weight,
             strengths: editingPlayer.strengths,
@@ -62,12 +97,11 @@ export default function Players() {
         })
         .eq('id', editingPlayer.id);
 
-    if (error) {
-        alert('Error: ' + error.message);
-    } else {
-        alert('Profile updated successfully!');
+    if (error) toast.error('Error: ' + error.message);
+    else {
         setEditingPlayer(null);
-        fetchPlayers();
+        await fetchPlayers();
+        toast.success('Profile updated successfully!');
     }
     setSaveLoading(false);
   }
@@ -84,48 +118,28 @@ export default function Players() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
                 <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">Team Squad</h1>
-                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-2 border-l-4 border-pl-green pl-2">The official roster of RealFake FC</p>
+                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-2 border-l-4 border-pl-green pl-2">RealFake FC Official Roster</p>
             </div>
-            {!user && (
-                <Link to="/login" className="bg-pl-purple text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase hover:bg-pl-pink transition-all cursor-pointer shadow-lg">
-                    Sign In to Edit Profile
-                </Link>
-            )}
-            {isAdmin && <span className="bg-pl-green text-pl-purple px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-pl-purple shadow-sm">Master Admin Mode</span>}
+            {!user && <Link to="/login" className="bg-pl-purple text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase hover:bg-pl-pink transition-all cursor-pointer shadow-lg">Sign In</Link>}
+            {isAdmin && <span className="bg-pl-green text-pl-purple px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-pl-purple">Admin Mode</span>}
         </div>
         
-        {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-10">
           {['All', 'Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Injured'].map(pos => (
-            <button
-              key={pos}
-              onClick={() => setFilter(pos)}
-              className={`px-6 py-2 rounded-full font-bold text-sm transition-colors uppercase cursor-pointer ${
-                filter === pos 
-                  ? 'bg-pl-purple text-white shadow-md' 
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
-              }`}
-            >
+            <button key={pos} onClick={() => setFilter(pos)} className={`px-6 py-2 rounded-full font-bold text-sm transition-colors uppercase cursor-pointer ${filter === pos ? 'bg-pl-purple text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
               {pos === 'Injured' ? '🚑 Injured' : `${pos}s`}
             </button>
           ))}
         </div>
 
-        {loading && (
-          <div className="text-center py-20 text-pl-purple/20 font-heading text-4xl uppercase animate-pulse">Loading Roster...</div>
-        )}
-
         {!loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredPlayers.map(player => (
-              <div key={player.id} className={player.status === 'Injured' ? 'opacity-75 grayscale-[0.3]' : ''}>
-                <PlayerCard 
-                    player={player} 
-                    onClick={(p) => setEditingPlayer(p)}
-                />
+              <div key={`${player.id}-${player.image}`} className={player.status === 'Injured' ? 'opacity-75 grayscale-[0.3]' : ''}>
+                <PlayerCard player={player} onClick={(p) => setEditingPlayer(p)} />
                 {player.status === 'Injured' && (
                     <div className="mt-2 text-center">
-                        <span className="bg-red-50 text-red-600 text-[9px] font-bold px-3 py-1 rounded-full uppercase border border-red-100 tracking-tighter">Inactive • Recovering</span>
+                        <span className="bg-red-100 text-red-600 text-[9px] font-bold px-3 py-1 rounded-full uppercase border border-red-100">Injured</span>
                     </div>
                 )}
               </div>
@@ -134,54 +148,44 @@ export default function Players() {
         )}
       </div>
 
-      {/* MODAL */}
       {editingPlayer && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border-t-[12px] border-pl-purple text-pl-purple relative">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 text-pl-purple">
+              <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border-t-[12px] border-pl-purple relative">
                   <div className="p-8 flex justify-between items-start border-b border-gray-50">
                       <div>
-                          <h3 className="text-3xl font-heading font-bold uppercase leading-none mb-1">
-                              {editingPlayer.email === user?.email ? 'My Profile' : 'Player Card'}
-                          </h3>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                              {editingPlayer.name}
-                              {editingPlayer.email === user?.email && <span className="text-pl-green bg-pl-green/10 px-1.5 py-0.5 rounded">AUTHENTICATED</span>}
-                          </p>
+                          <h3 className="text-2xl font-heading font-bold uppercase mb-1">{editingPlayer.email === user?.email ? 'My Profile' : 'Player Card'}</h3>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{editingPlayer.name}</p>
                       </div>
-                      <button onClick={() => setEditingPlayer(null)} className="text-gray-300 hover:text-red-500 text-4xl leading-none transition-colors cursor-pointer">&times;</button>
+                      <button onClick={() => { setEditingPlayer(null); }} className="text-gray-300 hover:text-red-500 text-4xl leading-none transition-colors cursor-pointer">&times;</button>
                   </div>
 
-                  <div className="p-8 space-y-8">
-                      <div className="flex justify-center relative">
-                          <div className="w-36 h-36 rounded-full overflow-hidden border-8 border-pl-gray bg-gray-50 shadow-inner">
-                              <img src={editingPlayer.image || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" />
+                  <div className="p-8 space-y-6 text-center">
+                      <div className="flex flex-col items-center">
+                          <div className="relative group">
+                              <div className="w-32 h-32 rounded-full overflow-hidden border-8 border-pl-gray bg-gray-50 shadow-inner">
+                                  <img src={editingPlayer.image || 'https://via.placeholder.com/150'} className="w-full h-full object-cover" />
+                              </div>
+                              {(user?.email === editingPlayer.email || isAdmin) && (
+                                <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold uppercase text-center p-2">
+                                    {uploading ? 'Uploading...' : 'Change Photo'}
+                                    <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                                </label>
+                              )}
                           </div>
-                          <div className="absolute -bottom-2 bg-pl-pink text-white font-heading font-bold text-2xl w-12 h-12 flex items-center justify-center rounded-full border-4 border-white shadow-lg">
-                              {editingPlayer.number}
-                          </div>
+                          {uploading && <div className="mt-2 text-pl-pink font-bold text-[10px] animate-pulse uppercase">Uploading...</div>}
                       </div>
 
-                      {/* TRƯỜNG HỢP 1: CHÍNH CHỦ HOẶC ADMIN -> HIỆN FORM SỬA */}
                       {(user?.email === editingPlayer.email || isAdmin) ? (
-                          <form onSubmit={handleSaveProfile} className="space-y-5">
-                              {isAdmin && user?.email !== editingPlayer.email && (
-                                  <div className="bg-amber-50 text-amber-700 p-3 rounded-xl text-[10px] font-bold uppercase text-center border border-amber-100 shadow-sm">
-                                      🛡️ Master Administrator Access
-                                  </div>
-                              )}
+                          <form onSubmit={handleSaveProfile} className="space-y-5 text-left">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div className="space-y-1">
                                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Nickname</label>
-                                      <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none text-sm font-bold transition-all" value={editingPlayer.nickname || ''} onChange={e => setEditingPlayer({...editingPlayer, nickname: e.target.value})} placeholder="e.g. The Sniper" />
+                                      <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none text-sm font-bold transition-all" value={editingPlayer.nickname || ''} onChange={e => setEditingPlayer({...editingPlayer, nickname: e.target.value})} />
                                   </div>
-                                  <div className="space-y-1 opacity-60 cursor-not-allowed">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Email (Linked)</label>
-                                      <div className="p-3 bg-gray-100 rounded-xl text-[10px] text-gray-500 truncate border-2 border-transparent">{editingPlayer.email || 'None'}</div>
+                                  <div className="space-y-1 opacity-60">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Auth Email</label>
+                                      <div className="p-3 bg-gray-100 rounded-xl text-[10px] text-gray-500 truncate">{editingPlayer.email || 'None'}</div>
                                   </div>
-                              </div>
-                              <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Profile Picture URL</label>
-                                  <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs outline-none transition-all" value={editingPlayer.image || ''} onChange={e => setEditingPlayer({...editingPlayer, image: e.target.value})} />
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                   <div className="space-y-1">
@@ -194,53 +198,29 @@ export default function Players() {
                                   </div>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Top Strengths</label>
-                                      <textarea className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs h-24 outline-none resize-none" value={editingPlayer.strengths || ''} onChange={e => setEditingPlayer({...editingPlayer, strengths: e.target.value})} placeholder="Describe your game..." />
-                                  </div>
-                                  <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Areas to Improve</label>
-                                      <textarea className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs h-24 outline-none resize-none" value={editingPlayer.weaknesses || ''} onChange={e => setEditingPlayer({...editingPlayer, weaknesses: e.target.value})} placeholder="Weaknesses..." />
-                                  </div>
+                                  <textarea placeholder="Strengths" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs h-24 outline-none resize-none shadow-inner" value={editingPlayer.strengths || ''} onChange={e => setEditingPlayer({...editingPlayer, strengths: e.target.value})} />
+                                  <textarea placeholder="Weaknesses" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs h-24 outline-none resize-none shadow-inner" value={editingPlayer.weaknesses || ''} onChange={e => setEditingPlayer({...editingPlayer, weaknesses: e.target.value})} />
                               </div>
-                              <button disabled={saveLoading} className="w-full py-4 font-bold text-white bg-pl-purple rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl cursor-pointer uppercase text-xs tracking-[0.2em] disabled:opacity-50 mt-4">
-                                  {saveLoading ? 'Syncing with Stadium...' : 'Update Official Records'}
+                              <button disabled={saveLoading || uploading} className="w-full py-4 font-bold text-white bg-pl-purple rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl cursor-pointer uppercase text-xs tracking-[0.2em] disabled:opacity-50 mt-4 active:scale-95">
+                                  {saveLoading ? 'Syncing...' : 'Update Official Records'}
                               </button>
                           </form>
                       ) : (
-                          /* TRƯỜNG HỢP 2: XEM NGƯỜI KHÁC (GUEST VIEW) */
                           <div className="space-y-8 text-center">
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-2 gap-4 text-left">
                                   {[
-                                      { l: 'Preferred Pos', v: editingPlayer.position, icon: '⚽' },
-                                      { l: 'Known As', v: editingPlayer.nickname || '-', icon: '🏷️' },
-                                      { l: 'Official Height', v: editingPlayer.height ? `${editingPlayer.height} cm` : 'TBD', icon: '📏' },
-                                      { l: 'Official Weight', v: editingPlayer.weight ? `${editingPlayer.weight} kg` : 'TBD', icon: '⚖️' }
+                                      { l: 'Pos', v: editingPlayer.position },
+                                      { l: 'Nick', v: editingPlayer.nickname || '-' },
+                                      { l: 'Height', v: editingPlayer.height ? `${editingPlayer.height}cm` : '-' },
+                                      { l: 'Weight', v: editingPlayer.weight ? `${editingPlayer.weight}kg` : '-' }
                                   ].map((it, i) => (
-                                      <div key={i} className="bg-pl-gray/30 p-4 rounded-2xl border border-white flex flex-col items-center justify-center shadow-sm">
-                                          <span className="text-xl mb-1">{it.icon}</span>
+                                      <div key={i} className="bg-gray-50 p-4 rounded-2xl border border-white shadow-sm">
                                           <span className="text-[9px] font-bold text-gray-400 block uppercase mb-1">{it.l}</span>
-                                          <span className="font-heading font-bold text-pl-purple text-lg leading-none">{it.v}</span>
+                                          <span className="font-heading font-bold text-lg leading-none">{it.v}</span>
                                       </div>
                                   ))}
                               </div>
-                              
-                              {editingPlayer.strengths && (
-                                  <div className="text-left bg-pl-green/10 p-5 rounded-2xl border-2 border-pl-green/20 relative">
-                                      <div className="absolute -top-3 left-4 bg-pl-green text-pl-purple px-3 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-sm">Scouting Report</div>
-                                      <p className="text-sm font-medium leading-relaxed italic text-pl-purple">"{editingPlayer.strengths}"</p>
-                                  </div>
-                              )}
-
-                              {!user && (
-                                  <div className="bg-pl-pink/5 p-4 rounded-2xl border border-pl-pink/10">
-                                      <p className="text-[10px] text-pl-pink font-bold uppercase tracking-widest">Sign in to manage your own player profile</p>
-                                  </div>
-                              )}
-                              
-                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all cursor-pointer uppercase text-xs tracking-widest">
-                                  Close File
-                              </button>
+                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Close Profile</button>
                           </div>
                       )}
                   </div>

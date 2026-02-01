@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function Login() {
   const { loginWithGoogle, user, isWhitelisted, loading: authLoading, logout } = useAuth();
@@ -8,7 +9,6 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-      // Nếu đã login và hợp lệ -> Về home
       if (user && isWhitelisted) {
           navigate('/');
       }
@@ -19,7 +19,7 @@ export default function Login() {
       setLoading(true);
       await loginWithGoogle();
     } catch (error: any) {
-      alert('Error: ' + error.message);
+      toast.error('Login failed: ' + error.message);
       setLoading(false);
     }
   };

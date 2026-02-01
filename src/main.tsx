@@ -10,11 +10,13 @@ import Admin from './pages/Admin.tsx'
 import Stats from './pages/Stats.tsx'
 import Login from './pages/Login.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { Toaster } from 'sonner'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AuthProvider>
+      <Toaster position="top-right" richColors />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>

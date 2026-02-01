@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import type { Match, MatchVote, MatchStat, Player } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 export default function MatchDetail() {
   const { id } = useParams();
@@ -80,8 +81,9 @@ export default function MatchDetail() {
 
     if (error) {
       console.error(error);
-      alert('Error: ' + error.message);
+      toast.error('Submission failed: ' + error.message);
     } else {
+      toast.success('Vote recorded!');
       setMessage('Vote recorded!');
       setTimeout(() => setMessage(''), 3000);
       fetchMatchData(match.id.toString());

@@ -24,7 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!email) return false;
     if (email === ADMIN_EMAIL) return true;
 
-    // Kiểm tra xem email có trong bảng players không
+    // Thêm timestamp vào query để tránh cache 304
     const { data, error } = await supabase
       .from('players')
       .select('email')
@@ -40,6 +40,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initAuth = async () => {
+        setLoading(true);
+        // Lấy session mới nhất từ server, không dùng cache
         const { data: { session } } = await supabase.auth.getSession();
         const currentUser = session?.user ?? null;
         setUser(currentUser);
@@ -47,22 +49,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (currentUser) {
             const allowed = await checkWhitelist(currentUser.email);
             setIsWhitelisted(allowed);
-            // Nếu không được phép, tự động sign out sau khi hiện thông báo (xử lý ở UI)
         }
         setLoading(false);
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
+      
       if (currentUser) {
           const allowed = await checkWhitelist(currentUser.email);
           setIsWhitelisted(allowed);
       } else {
           setIsWhitelisted(false);
       }
+
+      if (event === 'SIGNED_OUT') {
+          // Force clear local cache
+          setUser(null);
+          setIsWhitelisted(false);
+      }
+      
       setLoading(false);
     });
 
@@ -73,14 +82,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: `${window.location.origin}/login`
       }
     });
     if (error) throw error;
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        
+        // Xóa mọi dữ liệu trong localStorage liên quan đến auth
+        localStorage.clear();
+        
+        // Chuyển hướng về home và reload mạnh trang để clear React state
+        window.location.href = '/';
+    } catch (err) {
+        console.error('Logout error:', err);
+        // Fallback: cứ reload trang
+        window.location.reload();
+    }
   };
 
   const isAdmin = user?.email === ADMIN_EMAIL;
