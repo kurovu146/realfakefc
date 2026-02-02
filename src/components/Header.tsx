@@ -27,7 +27,8 @@ export default function Header() {
     { label: 'Fixtures', path: '/fixtures' },
     { label: 'Players', path: '/players' },
     { label: 'Stats', path: '/stats' },
-    { label: 'Admin', path: '/admin' },
+    // Chỉ thêm Admin nếu là Admin
+    ...(isAdmin ? [{ label: 'Admin', path: '/admin' }] : []),
   ];
 
   return (
@@ -48,7 +49,7 @@ export default function Header() {
               key={item.path} 
               to={item.path} 
               className={cn(
-                "hover:text-pl-green transition-all py-2 border-b-2 border-transparent",
+                "hover:text-pl-green transition-all py-2 border-b-2 border-transparent cursor-pointer",
                 location.pathname === item.path && "text-pl-green border-pl-green scale-105"
               )}
             >
@@ -81,9 +82,9 @@ export default function Header() {
         <div className="md:hidden bg-pl-purple border-t border-pl-pink py-6 shadow-2xl animate-in slide-in-from-top-2">
           <nav className="flex flex-col gap-6 px-6 font-heading text-xl font-bold uppercase tracking-widest">
             {navItems.map(item => (
-              <Link key={item.path} to={item.path} className={cn("hover:text-pl-green block py-2 border-l-4 border-transparent pl-4 transition-all", location.pathname === item.path && "text-pl-green border-pl-green bg-white/5")} onClick={() => setIsOpen(false)}>{item.label}</Link>
+              <Link key={item.path} to={item.path} className={cn("hover:text-pl-green block py-2 border-l-4 border-transparent pl-4 transition-all cursor-pointer", location.pathname === item.path && "text-pl-green border-pl-green bg-white/5")} onClick={() => setIsOpen(false)}>{item.label}</Link>
             ))}
-            {user ? <button onClick={() => { logout(); setIsOpen(false); }} className="text-left py-2 text-red-400 font-bold border-l-4 border-transparent pl-4 uppercase">Logout</button> : <Link to="/login" onClick={() => setIsOpen(false)} className="py-2 text-pl-green font-bold border-l-4 border-transparent pl-4 uppercase">Login</Link>}
+            {user ? <button onClick={() => { logout(); setIsOpen(false); }} className="text-left py-2 text-red-400 font-bold border-l-4 border-transparent pl-4 uppercase cursor-pointer">Logout</button> : <Link to="/login" onClick={() => setIsOpen(false)} className="py-2 text-pl-green font-bold border-l-4 border-transparent pl-4 uppercase cursor-pointer">Login</Link>}
           </nav>
         </div>
       )}
