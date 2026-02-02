@@ -107,8 +107,6 @@ export default function Admin() {
     const matchData = { ...editingMatch, season: editingMatch.season || 2026 };
     let error;
     
-    const isNew = !editingMatch.id;
-
     if (editingMatch.id) {
        const res = await supabase.from('matches').update(matchData).eq('id', editingMatch.id);
        error = res.error;
