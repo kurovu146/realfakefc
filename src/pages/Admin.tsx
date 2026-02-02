@@ -107,19 +107,33 @@ export default function Admin() {
     const matchData = { ...editingMatch, season: editingMatch.season || 2026 };
     let error;
     
+    let newMatchId = editingMatch.id;
+
     if (editingMatch.id) {
-       const res = await supabase.from('matches').update(matchData).eq('id', editingMatch.id);
-       error = res.error;
+       const { error: e } = await supabase.from('matches').update(matchData).eq('id', editingMatch.id);
+       error = e;
     } else {
-       const res = await supabase.from('matches').insert(matchData);
-       error = res.error;
+       const { data, error: e } = await supabase.from('matches').insert(matchData).select().single();
+       error = e;
+       if (data) newMatchId = data.id;
     }
 
     if (error) {
         toast.error(error.message);
     } else { 
         toast.success('Matchday confirmed'); 
-        // Logic gửi thông báo ở đây (đã rút gọn để tránh lỗi type, bạn có thể copy lại hàm sendPushNotification nếu cần)
+        if (isNew && matchData.status === 'Upcoming' && matchData.opponent && matchData.date && newMatchId) {
+            // 1. Send OneSignal Push
+            await sendPushNotification(matchData.opponent, matchData.date, matchData.time || '');
+            
+            // 2. Create In-App Notification (Broadcast)
+            await supabase.from('notifications').insert({
+                title: 'New Match Announced!',
+                message: `VS ${matchData.opponent} on ${new Date(matchData.date).toLocaleDateString()}`,
+                link: `/fixtures/${newMatchId}`,
+                is_read: false
+            });
+        }
         setEditingMatch({ season: 2026, status: 'Upcoming' }); 
         await fetchData(); 
     }
@@ -197,21 +211,21 @@ export default function Admin() {
     <div className="container mx-auto px-4 py-10 min-h-screen text-pl-purple">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-gray-100 pb-6 gap-4">
         <div>
-            <h1 className="text-5xl font-heading font-bold uppercase leading-none">Master Control</h1>
+            <h1 className="text-4xl md:text-5xl font-heading font-bold uppercase leading-none">Master Control</h1>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">RealFake FC • Admin Console</p>
         </div>
         <div className="bg-pl-gray/20 p-3 rounded-2xl border border-white flex items-center gap-3">
             <div className="text-right">
                 <div className="text-[9px] font-bold text-pl-pink uppercase leading-none">Super User</div>
-                <div className="text-xs font-bold opacity-60">{user?.email}</div>
+                <div className="text-xs font-bold opacity-60 truncate max-w-[150px]">{user?.email}</div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-pl-purple flex items-center justify-center text-white font-bold shadow-md">RF</div>
+            <div className="w-10 h-10 rounded-full bg-pl-purple flex items-center justify-center text-white font-bold shadow-md shrink-0">RF</div>
         </div>
       </div>
 
-      <div className="flex gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-3 mb-10 overflow-x-auto pb-2 scrollbar-hide snap-x">
         {['players', 'matches', 'settings'].map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-8 py-3 rounded-2xl font-bold transition-all uppercase text-[10px] tracking-widest cursor-pointer whitespace-nowrap shadow-sm active:scale-95 ${activeTab === tab ? 'bg-pl-purple text-white' : 'bg-white text-gray-400 border border-gray-100 hover:border-pl-purple hover:text-pl-purple'}`}>
+            <button key={tab} onClick={() => setActiveTab(tab as any)} className={`px-6 md:px-8 py-3 rounded-2xl font-bold transition-all uppercase text-[10px] tracking-widest cursor-pointer whitespace-nowrap shadow-sm active:scale-95 snap-start ${activeTab === tab ? 'bg-pl-purple text-white' : 'bg-white text-gray-400 border border-gray-100 hover:border-pl-purple hover:text-pl-purple'}`}>
                 {tab === 'players' ? 'Manage Squad' : tab === 'matches' ? 'Manage Fixtures' : 'Team Settings'}
             </button>
         ))}
@@ -221,26 +235,26 @@ export default function Admin() {
 
       {/* TEAM SETTINGS TAB */}
       {activeTab === 'settings' && (
-          <div className="max-w-2xl mx-auto bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-50">
-              <h3 className="text-2xl font-heading font-bold mb-8 uppercase border-b pb-4">General Team Identity</h3>
+          <div className="max-w-2xl mx-auto bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl border border-gray-50">
+              <h3 className="text-xl md:text-2xl font-heading font-bold mb-8 uppercase border-b pb-4">General Team Identity</h3>
               <form onSubmit={saveSettings} className="space-y-8">
                   <div>
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Team Display Name</label>
-                      <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-lg font-heading font-bold outline-none" value={siteSettings.team_name} onChange={e => setSiteSettings({...siteSettings, team_name: e.target.value})} />
+                      <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-base md:text-lg font-heading font-bold outline-none" value={siteSettings.team_name} onChange={e => setSiteSettings({...siteSettings, team_name: e.target.value})} />
                   </div>
 
                   <div>
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Contact Phone Number</label>
-                      <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-lg font-mono font-bold outline-none" placeholder="e.g. 0912345678" value={siteSettings.contact_phone || ''} onChange={e => setSiteSettings({...siteSettings, contact_phone: e.target.value})} />
+                      <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-base md:text-lg font-mono font-bold outline-none" placeholder="e.g. 0912345678" value={siteSettings.contact_phone || ''} onChange={e => setSiteSettings({...siteSettings, contact_phone: e.target.value})} />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-8">
                       <div className="space-y-4">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Official Logo</label>
-                          <div className="w-32 h-32 rounded-3xl bg-pl-gray/20 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
+                          <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-pl-gray/20 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
                               {siteSettings.logo_url ? <img src={siteSettings.logo_url} className="w-full h-full object-contain p-4" /> : <span className="text-4xl">⚽</span>}
                               <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                                  <span className="text-white text-[9px] font-bold uppercase tracking-tighter">Upload Logo</span>
+                                  <span className="text-white text-[9px] font-bold uppercase tracking-tighter">Upload</span>
                                   <input type="file" accept="image/*" className="hidden" onChange={e => handleAdminFileUpload(e, 'logo')} />
                               </label>
                           </div>
@@ -248,10 +262,10 @@ export default function Admin() {
 
                       <div className="space-y-4">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Main Banner</label>
-                          <div className="w-full h-32 rounded-3xl bg-pl-gray/20 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
+                          <div className="w-full h-24 md:h-32 rounded-3xl bg-pl-gray/20 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
                               {siteSettings.banner_url ? <img src={siteSettings.banner_url} className="w-full h-full object-cover" /> : <span className="text-4xl">🖼️</span>}
                               <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                                  <span className="text-white text-[9px] font-bold uppercase tracking-tighter">Upload Banner</span>
+                                  <span className="text-white text-[9px] font-bold uppercase tracking-tighter">Upload</span>
                                   <input type="file" accept="image/*" className="hidden" onChange={e => handleAdminFileUpload(e, 'banner')} />
                               </label>
                           </div>
@@ -265,8 +279,8 @@ export default function Admin() {
 
       {/* PLAYERS TAB */}
       {activeTab === 'players' && (
-          <div className="grid md:grid-cols-12 gap-8 items-start">
-             <div className="md:col-span-4 bg-white p-8 rounded-3xl shadow-xl border border-gray-50 h-fit sticky top-24">
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
+             <div className="lg:col-span-4 bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-gray-50 h-fit lg:sticky lg:top-24">
                <h3 className="text-xl font-heading font-bold mb-6 uppercase border-b border-gray-50 pb-4 flex items-center gap-2">New Profile</h3>
                <form onSubmit={savePlayer} className="space-y-4">
                  <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-sm font-bold outline-none" placeholder="Full Name" value={editingPlayer.name || ''} onChange={e => setEditingPlayer({...editingPlayer, name: e.target.value})} required />
@@ -283,7 +297,7 @@ export default function Admin() {
                     <div className="flex items-center gap-4 mb-3">
                         <img src={editingPlayer.image || 'https://via.placeholder.com/60'} className="w-12 h-12 rounded-2xl bg-gray-100 object-cover shadow-sm border border-white" />
                         <label className="bg-white border border-gray-200 text-[10px] font-bold py-2 px-3 rounded-lg hover:border-pl-purple transition-all cursor-pointer inline-block uppercase tracking-tight">
-                            {uploading ? '...' : 'Upload Avatar'}
+                            {uploading ? '...' : 'Upload'}
                             <input type="file" accept="image/*" className="hidden" onChange={e => handleAdminFileUpload(e, 'player')} disabled={uploading} />
                         </label>
                     </div>
@@ -296,32 +310,53 @@ export default function Admin() {
                  </div>
                </form>
              </div>
-             <div className="md:col-span-8 bg-white rounded-3xl shadow-xl border border-gray-50 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-pl-purple text-white font-heading uppercase text-[10px] tracking-widest">
-                    <tr><th className="p-5">Squad #</th><th className="p-5">Visual</th><th className="p-5">Information</th><th className="p-5 text-right">Operations</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+             <div className="lg:col-span-8 bg-white rounded-3xl shadow-xl border border-gray-50 overflow-hidden">
+                {/* RESPONSIVE TABLE: HIDDEN ON MOBILE, SHOWN ON DESKTOP */}
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-pl-purple text-white font-heading uppercase text-[10px] tracking-widest">
+                        <tr><th className="p-5">Squad #</th><th className="p-5">Visual</th><th className="p-5">Information</th><th className="p-5 text-right">Operations</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {players.map(p => (
+                          <tr key={p.id} className="hover:bg-gray-50/50 transition-colors group">
+                            <td className="p-5 font-heading text-2xl text-gray-200 group-hover:text-pl-pink transition-colors">{p.number}</td>
+                            <td className="p-5"><img src={p.image} className="w-12 h-12 rounded-2xl bg-gray-100 object-cover border-2 border-white shadow-sm" /></td>
+                            <td className="p-5"><div className="font-bold text-pl-purple">{p.name}</div><div className="text-[9px] font-bold text-gray-400 uppercase">{p.position}</div></td>
+                            <td className="p-5 text-right space-x-2">
+                              <button onClick={() => setEditingPlayer(p)} className="text-white font-bold text-[9px] bg-pl-purple px-3 py-2 rounded-lg hover:bg-pl-pink transition-all cursor-pointer uppercase">Edit</button>
+                              <button onClick={() => setDeleteTarget({ type: 'player', id: p.id })} className="text-red-600 font-bold text-[9px] bg-red-50 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all cursor-pointer border border-red-100 uppercase">Del</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                </div>
+                {/* MOBILE LIST VIEW */}
+                <div className="md:hidden p-4 space-y-4">
                     {players.map(p => (
-                      <tr key={p.id} className="hover:bg-gray-50/50 transition-colors group">
-                        <td className="p-5 font-heading text-2xl text-gray-200 group-hover:text-pl-pink transition-colors">{p.number}</td>
-                        <td className="p-5"><img src={p.image} className="w-12 h-12 rounded-2xl bg-gray-100 object-cover border-2 border-white shadow-sm" /></td>
-                        <td className="p-5"><div className="font-bold text-pl-purple">{p.name}</div><div className="text-[9px] font-bold text-gray-400 uppercase">{p.position}</div></td>
-                        <td className="p-5 text-right space-x-2">
-                          <button onClick={() => setEditingPlayer(p)} className="text-white font-bold text-[9px] bg-pl-purple px-3 py-2 rounded-lg hover:bg-pl-pink transition-all cursor-pointer uppercase">Edit</button>
-                          <button onClick={() => setDeleteTarget({ type: 'player', id: p.id })} className="text-red-600 font-bold text-[9px] bg-red-50 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all cursor-pointer border border-red-100 uppercase">Del</button>
-                        </td>
-                      </tr>
+                        <div key={p.id} className="bg-gray-50 p-4 rounded-2xl flex items-center justify-between border border-gray-100">
+                            <div className="flex items-center gap-4">
+                                <img src={p.image || 'https://via.placeholder.com/40'} className="w-12 h-12 rounded-2xl bg-gray-200 object-cover shadow-sm" />
+                                <div>
+                                    <div className="font-bold text-pl-purple text-sm">{p.name}</div>
+                                    <div className="text-[10px] font-bold text-gray-400 uppercase">#{p.number} • {p.position}</div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <button onClick={() => setEditingPlayer(p)} className="text-white font-bold text-[9px] bg-pl-purple px-3 py-1.5 rounded-lg">EDIT</button>
+                                <button onClick={() => setDeleteTarget({ type: 'player', id: p.id })} className="text-red-600 font-bold text-[9px] bg-red-100 px-3 py-1.5 rounded-lg border border-red-200">DEL</button>
+                            </div>
+                        </div>
                     ))}
-                  </tbody>
-                </table>
+                </div>
              </div>
           </div>
       )}
 
       {activeTab === 'matches' && (
-          <div className="grid md:grid-cols-12 gap-8 items-start">
-             <div className="md:col-span-4 bg-white p-8 rounded-3xl shadow-xl border border-gray-50 h-fit sticky top-24">
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
+             <div className="lg:col-span-4 bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-gray-50 h-fit lg:sticky lg:top-24">
                <h3 className="text-xl font-heading font-bold mb-6 uppercase border-b border-gray-50 pb-4">New Matchday</h3>
                <form onSubmit={saveMatch} className="space-y-4">
                  <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-sm font-bold outline-none" placeholder="Rival Name" value={editingMatch.opponent || ''} onChange={e => setEditingMatch({...editingMatch, opponent: e.target.value})} required />
@@ -345,39 +380,63 @@ export default function Admin() {
                  </div>
                </form>
              </div>
-             <div className="md:col-span-8 bg-white rounded-3xl shadow-xl border border-gray-50 overflow-hidden">
-                <table className="w-full text-left">
-                  <thead className="bg-pl-purple text-white font-heading uppercase text-[10px] tracking-widest">
-                    <tr><th className="p-5">Timeline</th><th className="p-5">Opponent</th><th className="p-5 text-center">Outcome</th><th className="p-5 text-right">Control</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+             <div className="lg:col-span-8 bg-white rounded-3xl shadow-xl border border-gray-50 overflow-hidden">
+                {/* DESKTOP TABLE */}
+                <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-pl-purple text-white font-heading uppercase text-[10px] tracking-widest">
+                        <tr><th className="p-5">Timeline</th><th className="p-5">Opponent</th><th className="p-5 text-center">Outcome</th><th className="p-5 text-right">Control</th></tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {matches.map(m => (
+                          <tr key={m.id} className="hover:bg-gray-50/50 transition-colors group">
+                            <td className="p-5"><div className="font-bold text-sm">{new Date(m.date).toLocaleDateString()}</div><div className="text-[10px] text-gray-400 uppercase">{m.time.substring(0,5)}</div></td>
+                            <td className="p-5 font-bold text-pl-purple">{m.opponent}</td>
+                            <td className="p-5 text-center font-mono font-bold text-xl">{m.status === 'Upcoming' ? 'vs' : `${m.home_score} - ${m.away_score}`}</td>
+                            <td className="p-5 text-right space-x-2">
+                               <button onClick={() => openStats(m.id)} className="text-white font-bold text-[9px] bg-pl-pink px-3 py-2 rounded-lg hover:bg-pink-600 transition-all cursor-pointer uppercase shadow-sm">Stats</button>
+                               <button onClick={() => setEditingMatch(m)} className="text-pl-purple font-bold text-[9px] bg-gray-100 px-3 py-2 rounded-lg hover:bg-pl-purple hover:text-white transition-all cursor-pointer uppercase">Edit</button>
+                               <button onClick={() => setDeleteTarget({ type: 'match', id: m.id })} className="text-red-600 font-bold text-[9px] bg-red-50 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all cursor-pointer border border-red-100 uppercase">Del</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                </div>
+                {/* MOBILE LIST */}
+                <div className="md:hidden p-4 space-y-4">
                     {matches.map(m => (
-                      <tr key={m.id} className="hover:bg-gray-50/50 transition-colors group">
-                        <td className="p-5"><div className="font-bold text-sm">{new Date(m.date).toLocaleDateString()}</div><div className="text-[10px] text-gray-400 uppercase">{m.time.substring(0,5)}</div></td>
-                        <td className="p-5 font-bold text-pl-purple">{m.opponent}</td>
-                        <td className="p-5 text-center font-mono font-bold text-xl">{m.status === 'Upcoming' ? 'vs' : `${m.home_score} - ${m.away_score}`}</td>
-                        <td className="p-5 text-right space-x-2">
-                           <button onClick={() => openStats(m.id)} className="text-white font-bold text-[9px] bg-pl-pink px-3 py-2 rounded-lg hover:bg-pink-600 transition-all cursor-pointer uppercase shadow-sm">Stats</button>
-                           <button onClick={() => setEditingMatch(m)} className="text-pl-purple font-bold text-[9px] bg-gray-100 px-3 py-2 rounded-lg hover:bg-pl-purple hover:text-white transition-all cursor-pointer uppercase">Edit</button>
-                           <button onClick={() => setDeleteTarget({ type: 'match', id: m.id })} className="text-red-600 font-bold text-[9px] bg-red-50 px-3 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all cursor-pointer border border-red-100 uppercase">Del</button>
-                        </td>
-                      </tr>
+                        <div key={m.id} className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <div className="font-bold text-pl-purple text-sm">{m.opponent}</div>
+                                    <div className="text-[10px] font-bold text-gray-400 uppercase">{new Date(m.date).toLocaleDateString()} • {m.time.substring(0,5)}</div>
+                                </div>
+                                <div className="text-center bg-white border border-gray-200 px-3 py-1 rounded-lg">
+                                    <span className="font-mono font-bold text-lg">{m.status === 'Upcoming' ? 'VS' : `${m.home_score}-${m.away_score}`}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                               <button onClick={() => openStats(m.id)} className="text-white font-bold text-[9px] bg-pl-pink px-3 py-2 rounded-lg flex-grow">STATS</button>
+                               <button onClick={() => setEditingMatch(m)} className="text-pl-purple font-bold text-[9px] bg-white px-3 py-2 rounded-lg border border-gray-200">EDIT</button>
+                               <button onClick={() => setDeleteTarget({ type: 'match', id: m.id })} className="text-red-600 font-bold text-[9px] bg-red-50 px-3 py-2 rounded-lg border border-red-100">DEL</button>
+                            </div>
+                        </div>
                     ))}
-                  </tbody>
-                </table>
+                </div>
              </div>
           </div>
       )}
 
-      {/* STATS MODAL (Keep as is) */}
+      {/* STATS MODAL ... (keep existing) */}
       {statsMatchId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-md">
             <div className="bg-white rounded-[2.5rem] shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border-t-8 border-pl-pink relative">
                 <div className="p-8 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-                    <h3 className="text-3xl font-heading font-bold text-pl-purple uppercase">Match Records</h3>
+                    <h3 className="text-2xl md:text-3xl font-heading font-bold text-pl-purple uppercase">Match Records</h3>
                     <button onClick={() => setStatsMatchId(null)} className="text-gray-300 hover:text-red-500 text-4xl leading-none cursor-pointer transition-colors">&times;</button>
                 </div>
-                <div className="p-8">
+                <div className="p-6 md:p-8">
                     <form onSubmit={addStat} className="bg-pl-gray/10 p-6 rounded-3xl mb-8 border border-gray-100">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <select className="border-2 border-white shadow-sm p-3 rounded-xl cursor-pointer bg-white font-bold text-sm outline-none" value={newStat.player_id || ''} onChange={e => setNewStat({...newStat, player_id: Number(e.target.value)})} required>
@@ -401,10 +460,10 @@ export default function Admin() {
                         {currentMatchStats.map(s => (
                             <div key={s.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-50 shadow-sm group hover:border-pl-pink">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-pl-gray/20 flex items-center justify-center font-heading font-bold text-pl-purple text-lg">{s.player?.number}</div>
-                                    <div><div className="font-bold text-sm">{s.player?.name}</div><div className="flex gap-2 mt-1">{s.goals > 0 && <span className="text-[8px] font-bold bg-pl-purple text-white px-1.5 py-0.5 rounded">G:{s.goals}</span>}{s.assists > 0 && <span className="text-[8px] font-bold bg-pl-green text-pl-purple px-1.5 py-0.5 rounded">A:{s.assists}</span>}{s.is_motm && <span className="text-[8px] font-bold bg-pl-pink text-white px-1.5 py-0.5 rounded">MOTM</span>}</div></div>
+                                    <div className="w-10 h-10 rounded-full bg-pl-gray/20 flex items-center justify-center font-heading font-bold text-pl-purple text-lg shrink-0">{s.player?.number}</div>
+                                    <div><div className="font-bold text-sm">{s.player?.name}</div><div className="flex gap-2 mt-1 flex-wrap">{s.goals > 0 && <span className="text-[8px] font-bold bg-pl-purple text-white px-1.5 py-0.5 rounded">G:{s.goals}</span>}{s.assists > 0 && <span className="text-[8px] font-bold bg-pl-green text-pl-purple px-1.5 py-0.5 rounded">A:{s.assists}</span>}{s.is_motm && <span className="text-[8px] font-bold bg-pl-pink text-white px-1.5 py-0.5 rounded">MOTM</span>}</div></div>
                                 </div>
-                                <button onClick={() => setDeleteTarget({ type: 'stat', id: s.id })} className="text-gray-300 hover:text-red-500 p-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                <button onClick={() => setDeleteTarget({ type: 'stat', id: s.id })} className="text-gray-300 hover:text-red-500 p-2 cursor-pointer opacity-50 group-hover:opacity-100 transition-opacity"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                             </div>
                         ))}
                     </div>

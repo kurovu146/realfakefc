@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
+import NotificationBell from './NotificationBell';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +28,6 @@ export default function Header() {
     { label: 'Fixtures', path: '/fixtures' },
     { label: 'Players', path: '/players' },
     { label: 'Stats', path: '/stats' },
-    // Chỉ thêm Admin nếu là Admin
     ...(isAdmin ? [{ label: 'Admin', path: '/admin' }] : []),
   ];
 
@@ -59,11 +59,12 @@ export default function Header() {
           
           {user ? (
             <div className="flex items-center gap-4 ml-4 pl-4 border-l border-white/20">
+               <NotificationBell />
                <div className="flex flex-col items-end">
                   <span className={cn("text-[10px] font-bold uppercase leading-none", isAdmin ? "text-pl-green" : "text-gray-400")}>{isAdmin ? 'Admin' : 'Member'}</span>
                   <span className="text-xs opacity-70 truncate max-w-[100px]">{user.email}</span>
                </div>
-               <button onClick={() => logout()} className="bg-white/10 hover:bg-red-500 p-2 rounded-xl transition-all cursor-pointer shadow-inner">
+               <button onClick={() => logout()} className="bg-white/10 hover:bg-red-500 p-2 rounded-xl transition-all cursor-pointer shadow-inner" title="Logout">
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                </button>
             </div>
@@ -72,10 +73,13 @@ export default function Header() {
           )}
         </nav>
 
-        {/* Mobile Button */}
-        <button className="md:hidden text-white hover:text-pl-green transition-colors cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-        </button>
+        {/* Mobile Actions */}
+        <div className="md:hidden flex items-center gap-3">
+            <NotificationBell />
+            <button className="text-white hover:text-pl-green transition-colors cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+        </div>
       </div>
 
       {isOpen && (
