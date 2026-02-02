@@ -107,26 +107,26 @@ export default function MatchDetail() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
-      <div className="bg-pl-purple text-white py-12">
-         <div className="container mx-auto px-4 text-center">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-pl-green mb-4 opacity-80">{match.stadium} • {new Date(match.date).toLocaleDateString()} • {match.time.substring(0,5)}</div>
-            <div className="flex justify-center items-center gap-8 md:gap-16">
-              <div className="text-center">
-                <div className="w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center text-pl-purple font-bold text-2xl mb-4 mx-auto border-4 border-white/10 shadow-xl overflow-hidden">
+      <div className="bg-pl-purple text-white py-8 md:py-12">
+         <div className="container mx-auto px-2 md:px-4 text-center">
+            <div className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-pl-green mb-4 opacity-80">{match.stadium} • {new Date(match.date).toLocaleDateString()} • {match.time.substring(0,5)}</div>
+            <div className="flex justify-center items-center gap-2 md:gap-16">
+              <div className="text-center flex-1 min-w-0">
+                <div className="w-14 h-14 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center text-pl-purple font-bold text-xl md:text-2xl mb-2 md:mb-4 mx-auto border-2 md:border-4 border-white/10 shadow-xl overflow-hidden">
                     {teamLogo ? <img src={teamLogo} className="w-full h-full object-cover" /> : 'RF'}
                 </div>
-                <h2 className="text-xl md:text-4xl font-heading font-bold uppercase tracking-tight text-center">RealFake</h2>
+                <h2 className="text-xs md:text-4xl font-heading font-bold uppercase tracking-tight text-center truncate px-1">RealFake</h2>
               </div>
-              <div className="bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">
-                <span className="text-4xl md:text-7xl font-heading font-bold tabular-nums text-center">
-                  {match.status === 'Upcoming' ? 'VS' : `${match.home_score} - ${match.away_score}`}
+              <div className="bg-white/5 px-3 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl backdrop-blur-md border border-white/10 shadow-inner shrink-0">
+                <span className="text-2xl md:text-7xl font-heading font-bold tabular-nums text-center whitespace-nowrap">
+                  {match.status === 'Upcoming' ? 'VS' : `${match.home_score}-${match.away_score}`}
                 </span>
               </div>
-              <div className="text-center">
-                <div className="w-20 h-20 md:w-32 md:h-32 bg-white/80 rounded-full flex items-center justify-center text-pl-purple font-bold text-2xl mb-4 mx-auto overflow-hidden border-4 border-white/10 shadow-xl">
+              <div className="text-center flex-1 min-w-0">
+                <div className="w-14 h-14 md:w-32 md:h-32 bg-white/80 rounded-full flex items-center justify-center text-pl-purple font-bold text-xl md:text-2xl mb-2 md:mb-4 mx-auto overflow-hidden border-2 md:border-4 border-white/10 shadow-xl">
                    {match.opponent_logo ? <img src={match.opponent_logo} className="w-full h-full object-cover"/> : "??"}
                 </div>
-                <h2 className="text-xl md:text-4xl font-heading font-bold uppercase tracking-tight text-center">{match.opponent}</h2>
+                <h2 className="text-xs md:text-4xl font-heading font-bold uppercase tracking-tight text-center truncate px-1" title={match.opponent}>{match.opponent}</h2>
               </div>
             </div>
          </div>
