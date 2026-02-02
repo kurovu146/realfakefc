@@ -6,6 +6,7 @@ export interface Player {
   status?: 'Active' | 'Injured';
   nickname?: string;
   email?: string;
+  phone?: string;
   image: string;
   height?: number;
   weight?: number;
