@@ -100,12 +100,6 @@ export default function MatchDetail() {
     setLoading(false);
   }
 
-  function handleEditVote(vote: MatchVote) {
-      if (!user) return;
-      // In auto-mode, we just scroll to top because the form is always visible if logged in
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
   if (!match) return <div className="text-center py-20 text-pl-purple font-heading text-2xl animate-pulse uppercase">Matchday Loading...</div>;
 
   const goingVotes = votes.filter(v => v.is_going);

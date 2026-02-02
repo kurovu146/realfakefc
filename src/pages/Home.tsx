@@ -20,7 +20,7 @@ export default function Home() {
   const [latestMatches, setLatestMatches] = useState<Match[]>([]);
   const [featuredPlayers, setFeaturedPlayers] = useState<Player[]>([]);
   const [manager, setManager] = useState<Player | null>(null);
-  const [settings, setSettings] = useState({ team_name: 'RealFake FC', banner_url: '', contact_phone: '0987654321' });
+  const [settings, setSettings] = useState({ team_name: 'RealFake FC', banner_url: '', logo_url: '', contact_phone: '0987654321' });
 
   const fetchData = useCallback(async () => {
     // Settings
