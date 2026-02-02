@@ -10,8 +10,7 @@ export interface Player {
   height?: number;
   weight?: number;
   dob?: string;
-  strengths?: string;
-  weaknesses?: string;
+  joined_at?: string;
 }
 
 export interface Match {

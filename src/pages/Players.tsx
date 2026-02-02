@@ -27,7 +27,7 @@ export default function Players() {
     if (data) {
         const playersWithFreshImages = data.map(p => ({
             ...p,
-            image: p.image ? `${p.image}${p.image.includes('?') ? '&' : '?'}t=${new Date().getTime()}` : p.image
+            image: p.image ? `${p.image}${p.image.includes('?') ? '&' : '?'}t=${Date.now()}` : p.image
         }));
         setPlayers(playersWithFreshImages);
     }
@@ -44,21 +44,13 @@ export default function Players() {
       if (!event.target.files || event.target.files.length === 0) return;
       
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${editingPlayer?.id}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${editingPlayer?.id}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
-
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      setEditingPlayer(prev => prev ? { ...prev, image: `${publicUrl}?t=${new Date().getTime()}` } : null);
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      setEditingPlayer(prev => prev ? { ...prev, image: `${publicUrl}?t=${Date.now()}` } : null);
       toast.success('Avatar uploaded! Click Update to save.');
     } catch (error: any) {
       toast.error('Upload failed: ' + error.message);
@@ -86,9 +78,8 @@ export default function Players() {
             image: cleanImageUrl,
             height: editingPlayer.height,
             weight: editingPlayer.weight,
-            strengths: editingPlayer.strengths,
-            weaknesses: editingPlayer.weaknesses,
-            dob: editingPlayer.dob
+            dob: editingPlayer.dob,
+            joined_at: editingPlayer.joined_at
         })
         .eq('id', editingPlayer.id);
 
@@ -112,10 +103,10 @@ export default function Players() {
       <div className="container mx-auto px-4 text-left">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-                <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">Team Squad</h1>
-                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-2 border-l-4 border-pl-green pl-2">RealFake FC Official Roster</p>
+                <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none tracking-tight">Team Squad</h1>
+                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2em] mt-2 border-l-4 border-pl-green pl-2">RealFake FC Official Roster</p>
             </div>
-            {!user && <Link to="/login" className="bg-pl-purple text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase hover:bg-pl-pink transition-all cursor-pointer shadow-lg">Sign In</Link>}
+            {!user && <Link to="/login" className="bg-pl-purple text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase hover:bg-pl-pink transition-all shadow-lg">Sign In</Link>}
             {isAdmin && <span className="bg-pl-green text-pl-purple px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-pl-purple">Admin Mode</span>}
         </div>
         
@@ -133,9 +124,7 @@ export default function Players() {
               <div key={`${player.id}-${player.image}`} className={player.status === 'Injured' ? 'opacity-75 grayscale-[0.3]' : ''}>
                 <PlayerCard player={player} onClick={(p) => setEditingPlayer(p)} />
                 {player.status === 'Injured' && (
-                    <div className="mt-2 text-center">
-                        <span className="bg-red-100 text-red-600 text-[9px] font-bold px-3 py-1 rounded-full uppercase border border-red-100">Injured</span>
-                    </div>
+                    <div className="mt-2 text-center"><span className="bg-red-100 text-red-600 text-[9px] font-bold px-3 py-1 rounded-full uppercase border border-red-100">Injured</span></div>
                 )}
               </div>
             ))}
@@ -148,10 +137,10 @@ export default function Players() {
               <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border-t-[12px] border-pl-purple relative">
                   <div className="p-8 flex justify-between items-start border-b border-gray-50">
                       <div>
-                          <h3 className="text-2xl font-heading font-bold uppercase mb-1">{editingPlayer.email === user?.email ? 'My Profile' : 'Player Card'}</h3>
+                          <h3 className="text-2xl font-heading font-bold uppercase mb-1">{editingPlayer.email === user?.email ? 'My Official Profile' : 'Player Dossier'}</h3>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{editingPlayer.name}</p>
                       </div>
-                      <button onClick={() => { setEditingPlayer(null); }} className="text-gray-300 hover:text-red-500 text-4xl leading-none transition-colors cursor-pointer">&times;</button>
+                      <button onClick={() => { setEditingPlayer(null); }} className="text-gray-300 hover:text-red-500 text-4xl cursor-pointer transition-colors">&times;</button>
                   </div>
 
                   <div className="p-8 space-y-6 text-center">
@@ -162,12 +151,12 @@ export default function Players() {
                               </div>
                               {(user?.email === editingPlayer.email || isAdmin) && (
                                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold uppercase text-center p-2">
-                                    {uploading ? 'Uploading...' : 'Change Photo'}
+                                    {uploading ? '...' : 'Change Photo'}
                                     <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={uploading} />
                                 </label>
                               )}
                           </div>
-                          {uploading && <div className="mt-2 text-pl-pink font-bold text-[10px] animate-pulse uppercase">Uploading...</div>}
+                          {uploading && <div className="mt-2 text-pl-pink font-bold text-[10px] animate-pulse uppercase tracking-widest">Uploading...</div>}
                       </div>
 
                       {(user?.email === editingPlayer.email || isAdmin) ? (
@@ -178,11 +167,21 @@ export default function Players() {
                                       <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none text-sm font-bold transition-all" value={editingPlayer.nickname || ''} onChange={e => setEditingPlayer({...editingPlayer, nickname: e.target.value})} />
                                   </div>
                                   <div className="space-y-1 opacity-60">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Auth Email</label>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 tracking-tighter text-gray-300">Auth Email (Locked)</label>
                                       <div className="p-3 bg-gray-100 rounded-xl text-[10px] text-gray-500 truncate">{editingPlayer.email || 'None'}</div>
                                   </div>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Birth Date</label>
+                                      <input type="date" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono text-sm" value={editingPlayer.dob || ''} onChange={e => setEditingPlayer({...editingPlayer, dob: e.target.value})} />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Joined Date</label>
+                                      <input type="date" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono text-sm" value={editingPlayer.joined_at || ''} onChange={e => setEditingPlayer({...editingPlayer, joined_at: e.target.value})} />
+                                  </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-center">
                                   <div className="space-y-1">
                                       <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Height (cm)</label>
                                       <input type="number" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono font-bold" value={editingPlayer.height || ''} onChange={e => setEditingPlayer({...editingPlayer, height: Number(e.target.value)})} />
@@ -192,30 +191,27 @@ export default function Players() {
                                       <input type="number" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono font-bold" value={editingPlayer.weight || ''} onChange={e => setEditingPlayer({...editingPlayer, weight: Number(e.target.value)})} />
                                   </div>
                               </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                  <textarea placeholder="Strengths" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs h-24 outline-none resize-none shadow-inner" value={editingPlayer.strengths || ''} onChange={e => setEditingPlayer({...editingPlayer, strengths: e.target.value})} />
-                                  <textarea placeholder="Weaknesses" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 text-xs h-24 outline-none resize-none shadow-inner" value={editingPlayer.weaknesses || ''} onChange={e => setEditingPlayer({...editingPlayer, weaknesses: e.target.value})} />
-                              </div>
-                              <button disabled={saveLoading || uploading} className="w-full py-4 font-bold text-white bg-pl-purple rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl cursor-pointer uppercase text-xs tracking-[0.2em] disabled:opacity-50 mt-4 active:scale-95">
-                                  {saveLoading ? 'Syncing...' : 'Update Official Records'}
-                              </button>
+                              <button disabled={saveLoading || uploading} className="w-full py-4 font-bold text-white bg-pl-purple rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl cursor-pointer uppercase text-xs tracking-widest disabled:opacity-50 mt-4 active:scale-95">Update Official Records</button>
                           </form>
                       ) : (
                           <div className="space-y-8 text-center">
                               <div className="grid grid-cols-2 gap-4 text-left">
                                   {[
-                                      { l: 'Pos', v: editingPlayer.position },
-                                      { l: 'Nick', v: editingPlayer.nickname || '-' },
-                                      { l: 'Height', v: editingPlayer.height ? `${editingPlayer.height}cm` : '-' },
-                                      { l: 'Weight', v: editingPlayer.weight ? `${editingPlayer.weight}kg` : '-' }
+                                      { l: 'Preferred Pos', v: editingPlayer.position, icon: '⚽' },
+                                      { l: 'Known As', v: editingPlayer.nickname || '-', icon: '🏷️' },
+                                      { l: 'Born On', v: editingPlayer.dob ? new Date(editingPlayer.dob).toLocaleDateString() : 'TBD', icon: '🎂' },
+                                      { l: 'Active Since', v: editingPlayer.joined_at ? new Date(editingPlayer.joined_at).getFullYear() : '2014', icon: '🗓️' },
+                                      { l: 'Physical: Height', v: editingPlayer.height ? `${editingPlayer.height}cm` : '-', icon: '📏' },
+                                      { l: 'Physical: Weight', v: editingPlayer.weight ? `${editingPlayer.weight}kg` : '-', icon: '⚖️' }
                                   ].map((it, i) => (
-                                      <div key={i} className="bg-gray-50 p-4 rounded-2xl border border-white shadow-sm">
+                                      <div key={i} className="bg-gray-50 p-4 rounded-2xl border border-white shadow-sm flex flex-col items-center justify-center">
+                                          <span className="text-xl mb-1">{it.icon}</span>
                                           <span className="text-[9px] font-bold text-gray-400 block uppercase mb-1">{it.l}</span>
                                           <span className="font-heading font-bold text-lg leading-none">{it.v}</span>
                                       </div>
                                   ))}
                               </div>
-                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-100 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Close Profile</button>
+                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Close Profile</button>
                           </div>
                       )}
                   </div>
