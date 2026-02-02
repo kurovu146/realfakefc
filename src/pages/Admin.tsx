@@ -100,7 +100,7 @@ export default function Admin() {
   }
 
   // --- Matches Logic ---
-  async function sendPushNotification(opponent: string, date: string, time: string) {
+  async function sendPushNotification(opponent: string, date: string, time: string, matchId: number) {
       const appId = import.meta.env.VITE_ONESIGNAL_APP_ID;
       const apiKey = import.meta.env.VITE_ONESIGNAL_API_KEY;
       
@@ -118,7 +118,7 @@ export default function Admin() {
             included_segments: ['Total Subscriptions'],
             headings: { en: "⚽ New Match Announced!" },
             contents: { en: `RealFake FC vs ${opponent} on ${new Date(date).toLocaleDateString()} at ${time}. Vote now!` },
-            url: window.location.origin
+            url: `${window.location.origin}/fixtures/${matchId}`
         })
       };
 
@@ -157,7 +157,7 @@ export default function Admin() {
         toast.success('Matchday confirmed'); 
         if (isNew && matchData.status === 'Upcoming' && matchData.opponent && matchData.date && newMatchId) {
             // 1. Send OneSignal Push
-            await sendPushNotification(matchData.opponent, matchData.date, matchData.time || '');
+            await sendPushNotification(matchData.opponent, matchData.date, matchData.time || '', newMatchId);
             
             // 2. Create In-App Notification (Broadcast)
             await supabase.from('notifications').insert({
