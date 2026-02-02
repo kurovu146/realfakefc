@@ -106,6 +106,9 @@ export default function Admin() {
       
       if (!appId || !apiKey) return;
 
+      // Sử dụng URL thật từ biến môi trường hoặc fallback về origin
+      const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+
       const options = {
         method: 'POST',
         headers: {
@@ -118,7 +121,8 @@ export default function Admin() {
             included_segments: ['Total Subscriptions'],
             headings: { en: "⚽ New Match Announced!" },
             contents: { en: `RealFake FC vs ${opponent} on ${new Date(date).toLocaleDateString()} at ${time}. Vote now!` },
-            url: `${window.location.origin}/fixtures/${matchId}`
+            url: `${siteUrl}/fixtures/${matchId}`,
+            data: { url: `${siteUrl}/fixtures/${matchId}` }
         })
       };
 

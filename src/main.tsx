@@ -22,6 +22,26 @@ const OneSignalApp = () => {
                 appId: import.meta.env.VITE_ONESIGNAL_APP_ID || "", 
                 allowLocalhostAsSecureOrigin: true 
             });
+            
+            // Xử lý click thông báo
+            OneSignal.Notifications.addEventListener('click', (event) => {
+                const data = event.notification.additionalData as any;
+                const url = data?.url || event.notification.launchURL;
+                if (url) {
+                    // Nếu là URL tuyệt đối, lấy phần path
+                    try {
+                        const urlObj = new URL(url);
+                        if (urlObj.origin === window.location.origin) {
+                             window.location.href = urlObj.pathname;
+                        } else {
+                             window.location.href = url;
+                        }
+                    } catch (e) {
+                        window.location.href = url;
+                    }
+                }
+            });
+
             OneSignal.Slidedown.promptPush();
         } catch (error) {
             console.error("OneSignal init error:", error);
