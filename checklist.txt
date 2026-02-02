@@ -2,37 +2,42 @@
 
 ## Xác thực & Phân quyền [DONE]
 - [x] Đăng nhập duy nhất bằng Google (Supabase Auth).
-- [x] Phân quyền Super Admin (Quyền can thiệp toàn hệ thống).
-- [x] Cơ chế Claim Profile: Mỗi tài khoản Google chỉ được Claim 1 profile cầu thủ duy nhất (Xác minh qua Team Password).
-- [x] Tự động ẩn các nút tương tác (Edit/Vote) đối với Guest (Chưa login).
+- [x] Phân quyền Super Admin qua Email Whitelist (VITE_ADMIN_EMAIL).
+- [x] Tự động nhận diện thành viên (Chủ sở hữu profile) sau khi Login.
+- [x] Chặn đăng nhập đối với Email lạ (Unauthorized Access screen).
+
+## Hệ thống Thông báo (Notifications) [DONE]
+- [x] Push Notification (PWA): Tích hợp OneSignal để bắn thông báo trận đấu mới lên điện thoại Player.
+- [x] In-App Notification Center: Quả chuông trên Header hiển thị danh sách thông báo Realtime.
+- [x] Deep Linking: Click thông báo dẫn trực tiếp vào trang chi tiết trận đấu tương ứng.
 
 ## Danh sách cầu thủ (Team Squad) [DONE]
-- [x] Đổi tên từ "First Team Squad" sang "Team Squad".
-- [x] Bộ lọc "All" hiển thị đầy đủ cầu thủ (bao gồm cả Injured).
-- [x] Tab lọc riêng cho cầu thủ Chấn thương (🚑 Injured).
-- [x] Chế độ Click-to-Edit: Click vào bất kỳ đâu trên card để mở Profile.
-- [x] UI/UX: Card cầu thủ chuyên nghiệp, hiệu ứng hover, đầy đủ thông tin (Nickname, Height, Weight, Strengths...).
+- [x] Hiển thị đầy đủ mọi người (All) và lọc riêng Chấn thương (Injured).
+- [x] Profile Dossier: Modal thiết kế 3D chuyên nghiệp hiển thị chi tiết chỉ số.
+- [x] Tự quản lý: Thành viên tự upload Avatar và sửa thông tin cá nhân.
+- [x] Tự động sửa lỗi Cache ảnh (Cache-busting bằng timestamp).
 
 ## Danh sách trận đấu (Fixtures) [DONE]
-- [x] Sắp xếp thông minh: Trận sắp tới (Upcoming) lên đầu, trận đã đấu (Finished) xếp dưới theo thứ tự mới nhất.
-- [x] Hiển thị tóm tắt danh sách điểm danh (Going/Missing) ngay tại màn hình danh sách.
-- [x] Tích hợp điều hướng nhanh đến trang Vote.
+- [x] Tách biệt 2 khu vực: Upcoming Fixtures và Match Results.
+- [x] Tooltip thông minh: Hover vào tên đội dài hiện đầy đủ tên.
+- [x] Tóm tắt điểm danh (Going count) ngay tại danh sách.
 
-## Thống kê & Bảng xếp hạng (League Stats) [DONE]
-- [x] Bộ lọc theo Mùa giải (Season).
-- [x] Banner tổng hợp thành tích đội: Số trận đã đá, Thắng, Hòa, Thua, Bàn thắng, Bàn thua, Tổng điểm (Thắng 3, Hòa 1).
-- [x] Bảng xếp hạng cầu thủ chi tiết: Số trận tham gia, Bàn thắng, Kiến tạo, MOTM, Phản lưới nhà (OG).
+## Thống kê & Bảng xếp hạng (Stats) [DONE]
+- [x] Team Summary Banner: Phân tích thành tích Won/Drawn/Lost/Points.
+- [x] Player Rankings: Thống kê G, A, MOTM, OG theo từng Mùa giải.
 
 ## Quản trị viên (Master Control) [DONE]
-- [x] Giao diện Admin chuyên dụng, chặn truy cập trái phép.
-- [x] Quản lý cầu thủ: Thêm/Sửa/Xóa, gán Email chủ sở hữu, cập nhật trạng thái Chấn thương.
-- [x] Quản lý trận đấu: Thiết lập lịch thi đấu, cập nhật tỉ số.
-- [x] Record Stats: Modal chuyên dụng để nhập thông số ghi bàn/kiến tạo cho từng trận đấu.
+- [x] Admin Dashboard tối ưu Mobile (Chuyển Table sang Card view).
+- [x] Collapsible Forms: Thu gọn form nhập liệu, chỉ mở khi cần thiết.
+- [x] Match Ledger: Bộ điều khiển +/- trực quan cho Goals/Assists/MOTM.
+- [x] Team Identity: Admin tự upload Logo và Banner toàn trang web.
+- [x] Custom Popup Confirm: Thay thế alert hệ thống bằng Modal xác nhận xóa đẹp mắt.
 
-## UI/UX Hoàn thiện [DONE]
-- [x] Đồng bộ phong cách Premier League (Tím, Xanh Neon, Hồng).
-- [x] Thêm `cursor-pointer` cho toàn bộ các thành phần có thể tương tác.
-- [x] Responsive hoàn toàn cho Mobile và Desktop.
+## Công nghệ & Deploy [DONE]
+- [x] Chuyển đổi thành công sang PWA (Có thể cài đặt như App).
+- [x] Deploy hoàn thiện trên Vercel (Support SPA Routing).
+- [x] Fix lỗi 304 Not Modified và Order of Hooks.
+- [x] Toàn bộ hệ thống dùng Toast Notification (sonner).
 
 ---
-*Cập nhật lần cuối: 31/01/2026 16:57*
+*Cập nhật lần cuối: 02/02/2026 13:18*

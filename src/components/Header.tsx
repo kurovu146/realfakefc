@@ -36,8 +36,8 @@ export default function Header() {
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center font-bold text-pl-purple text-xl group-hover:scale-110 transition-transform shadow-lg overflow-hidden border-2 border-white/20">
-            {logo ? <img src={logo} alt="Team Logo" className="w-full h-full object-contain" /> : 'RF'}
+          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center font-bold text-pl-purple text-xl group-hover:scale-110 transition-transform shadow-lg overflow-hidden border-2 border-white/20">
+            {logo ? <img src={logo} alt="Team Logo" className="w-full h-full object-cover" /> : 'RF'}
           </div>
           <span className="font-heading text-2xl font-bold uppercase tracking-tight group-hover:text-pl-green transition-colors">{teamName}</span>
         </Link>

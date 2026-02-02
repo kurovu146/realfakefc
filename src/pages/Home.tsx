@@ -97,9 +97,11 @@ export default function Home() {
                 <Link to={`/fixtures/${nextMatch.id}`} className="block bg-white/10 backdrop-blur-xl border border-white/20 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] hover:bg-white/20 transition-all shadow-2xl group relative overflow-hidden">
                   <h3 className="text-pl-green text-center mb-6 uppercase font-bold tracking-[0.3em] text-[9px] opacity-80">Next Matchday</h3>
                   <div className="flex justify-between items-center mb-6">
-                     <div className="text-center w-1/3">
-                        <div className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-xl mx-auto mb-2 flex items-center justify-center text-pl-purple font-bold text-xl md:text-2xl shadow-xl">RF</div>
-                        <span className="font-heading text-sm md:text-lg leading-tight block uppercase tracking-tighter">RealFake</span>
+                     <div className="text-center w-1/3 group-hover:scale-110 transition-transform">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-2xl mx-auto mb-3 flex items-center justify-center text-pl-purple font-bold text-2xl shadow-xl border-4 border-white/10 overflow-hidden">
+                            {settings.logo_url ? <img src={settings.logo_url} className="w-full h-full object-cover" /> : 'RF'}
+                        </div>
+                        <span className="font-heading text-lg leading-tight block uppercase tracking-tighter">RealFake</span>
                      </div>
                      <div className="text-2xl md:text-4xl font-heading font-bold text-center w-1/3 opacity-40 italic">VS</div>
                      <div className="text-center w-1/3">

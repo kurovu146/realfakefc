@@ -13,11 +13,20 @@ export default function MatchDetail() {
   const [stats, setStats] = useState<MatchStat[]>([]);
   const [votes, setVotes] = useState<MatchVote[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [teamLogo, setTeamLogo] = useState<string | null>(null);
   
   // Form State
   const [isGoing, setIsGoing] = useState(true);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+      async function fetchSettings() {
+          const { data } = await supabase.from('site_settings').select('logo_url').single();
+          if (data?.logo_url) setTeamLogo(data.logo_url);
+      }
+      fetchSettings();
+  }, []);
 
   const fetchMatchData = useCallback(async (matchId: string) => {
     const { data: matchData } = await supabase.from('matches').select('*').eq('id', matchId).single();
@@ -91,6 +100,12 @@ export default function MatchDetail() {
     setLoading(false);
   }
 
+  function handleEditVote(vote: MatchVote) {
+      if (!user) return;
+      // In auto-mode, we just scroll to top because the form is always visible if logged in
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   if (!match) return <div className="text-center py-20 text-pl-purple font-heading text-2xl animate-pulse uppercase">Matchday Loading...</div>;
 
   const goingVotes = votes.filter(v => v.is_going);
@@ -103,7 +118,9 @@ export default function MatchDetail() {
             <div className="text-[10px] font-bold uppercase tracking-widest text-pl-green mb-4 opacity-80">{match.stadium} • {new Date(match.date).toLocaleDateString()} • {match.time.substring(0,5)}</div>
             <div className="flex justify-center items-center gap-8 md:gap-16">
               <div className="text-center">
-                <div className="w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center text-pl-purple font-bold text-2xl mb-4 mx-auto border-4 border-white/10 shadow-xl text-center">RF</div>
+                <div className="w-20 h-20 md:w-32 md:h-32 bg-white rounded-full flex items-center justify-center text-pl-purple font-bold text-2xl mb-4 mx-auto border-4 border-white/10 shadow-xl overflow-hidden">
+                    {teamLogo ? <img src={teamLogo} className="w-full h-full object-cover" /> : 'RF'}
+                </div>
                 <h2 className="text-xl md:text-4xl font-heading font-bold uppercase tracking-tight text-center">RealFake</h2>
               </div>
               <div className="bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-md border border-white/10 shadow-inner">

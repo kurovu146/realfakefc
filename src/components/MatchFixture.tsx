@@ -1,17 +1,28 @@
+import { useState, useEffect } from 'react';
 import type { Match } from "@/types/database";
 import { cn } from "@/lib/utils";
+import { supabase } from '@/lib/supabase';
 
 interface MatchFixtureProps {
   match: Match;
 }
 
 export default function MatchFixture({ match }: MatchFixtureProps) {
+  const [teamLogo, setTeamLogo] = useState<string | null>(null);
   const isFinished = match.status === 'Finished';
   const isLive = match.status === 'Live';
   
   // Vote logic
   const votes = match.match_votes || [];
   const going = votes.filter(v => v.is_going);
+
+  useEffect(() => {
+    async function fetchLogo() {
+        const { data } = await supabase.from('site_settings').select('logo_url').single();
+        if (data?.logo_url) setTeamLogo(data.logo_url);
+    }
+    fetchLogo();
+  }, []);
 
   const TeamName = ({ name, align = 'left' }: { name: string, align?: 'left' | 'right' }) => (
     <div className={cn(
@@ -20,10 +31,14 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
     )}>
         {/* LOGO */}
         <div className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-md",
-            name === 'RealFake FC' ? "bg-pl-purple text-white" : "bg-gray-100 text-gray-400 border border-gray-200 overflow-hidden"
+            "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-md overflow-hidden border border-gray-100 bg-white",
+            name === 'RealFake FC' ? "border-pl-purple/20" : "bg-gray-50 text-gray-400 border-gray-200"
         )}>
-            {name === 'RealFake FC' ? 'RF' : (match.opponent_logo ? <img src={match.opponent_logo} alt={name} className="w-full h-full object-cover"/> : name.substring(0, 2).toUpperCase())}
+            {name === 'RealFake FC' ? (
+                teamLogo ? <img src={teamLogo} alt="RF" className="w-full h-full object-cover" /> : <span className="text-pl-purple font-bold">RF</span>
+            ) : (
+                match.opponent_logo ? <img src={match.opponent_logo} alt={name} className="w-full h-full object-cover"/> : name.substring(0, 2).toUpperCase()
+            )}
         </div>
 
         {/* NAME WITH TOOLTIP */}
@@ -35,7 +50,6 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
                 {name === 'RealFake FC' ? 'RF FC' : name}
             </span>
             
-            {/* Tooltip on Hover */}
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-pl-purple text-white text-[10px] font-bold rounded shadow-xl opacity-0 group-hover/name:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 uppercase tracking-widest border border-white/10">
                 {name}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-pl-purple"></div>
@@ -47,7 +61,6 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 hover:border-pl-purple transition-all cursor-pointer group h-full flex flex-col justify-between">
       <div>
-          {/* Top Bar */}
           <div className="flex justify-between items-center text-[10px] text-gray-400 mb-4 font-bold uppercase tracking-widest border-b border-gray-50 pb-2">
             <span className="truncate max-w-[150px]">{match.stadium || 'TBD Stadium'}</span>
             <div className="flex items-center gap-2 shrink-0 ml-2">
@@ -56,11 +69,9 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex justify-between items-center gap-2 mb-6">
             <TeamName name="RealFake FC" align="left" />
 
-            {/* Score / Time */}
             <div className={cn(
               "mx-1 px-3 py-1.5 rounded-lg min-w-[70px] text-center font-bold font-heading text-lg md:text-xl shadow-inner",
               isFinished ? "bg-pl-purple text-white" : "bg-gray-100 text-pl-purple border border-gray-200",
@@ -77,7 +88,6 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
           </div>
       </div>
       
-      {/* Attendance Summary */}
       <div className="border-t border-gray-100 pt-4 mt-auto">
         <div className="flex justify-between items-center mb-3">
           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Squad Status</span>
