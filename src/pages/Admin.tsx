@@ -100,6 +100,37 @@ export default function Admin() {
   }
 
   // --- Matches Logic ---
+  async function sendPushNotification(opponent: string, date: string, time: string) {
+      const appId = import.meta.env.VITE_ONESIGNAL_APP_ID;
+      const apiKey = import.meta.env.VITE_ONESIGNAL_API_KEY;
+      
+      if (!appId || !apiKey) return;
+
+      const options = {
+        method: 'POST',
+        headers: {
+            accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${apiKey}`
+        },
+        body: JSON.stringify({
+            app_id: appId,
+            included_segments: ['Total Subscriptions'],
+            headings: { en: "⚽ New Match Announced!" },
+            contents: { en: `RealFake FC vs ${opponent} on ${new Date(date).toLocaleDateString()} at ${time}. Vote now!` },
+            url: window.location.origin
+        })
+      };
+
+      try {
+          await fetch('https://onesignal.com/api/v1/notifications', options);
+          toast.success('Push notification sent to squad!');
+      } catch (err) {
+          console.error('Push error', err);
+          toast.error('Failed to send push notification');
+      }
+  }
+
   async function saveMatch(e: React.FormEvent) {
     e.preventDefault();
     if (!isAdmin) return;
@@ -107,6 +138,8 @@ export default function Admin() {
     const matchData = { ...editingMatch, season: editingMatch.season || 2026 };
     let error;
     
+    // Check if new BEFORE saving
+    const isNew = !editingMatch.id;
     let newMatchId = editingMatch.id;
 
     if (editingMatch.id) {
