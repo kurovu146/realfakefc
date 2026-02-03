@@ -25,6 +25,22 @@ interface TeamSummary {
 
 type SortKey = 'matches' | 'goals' | 'assists' | 'motm' | 'own_goals';
 
+const SortIcon = ({
+  colKey,
+  sortConfig,
+}: {
+  colKey: SortKey;
+  sortConfig: { key: SortKey; direction: "asc" | "desc" };
+}) => {
+  if (sortConfig.key !== colKey)
+    return <span className="opacity-20 ml-1">⇅</span>;
+  return (
+    <span className="ml-1 text-pl-pink">
+      {sortConfig.direction === "desc" ? "↓" : "↑"}
+    </span>
+  );
+};
+
 export default function Stats() {
   const [season, setSeason] = useState<number>(2026);
   const [playerStats, setPlayerStats] = useState<PlayerStats[]>([]);
@@ -112,11 +128,6 @@ export default function Stats() {
       return 0;
   });
 
-  const SortIcon = ({ colKey }: { colKey: SortKey }) => {
-      if (sortConfig.key !== colKey) return <span className="opacity-20 ml-1">⇅</span>;
-      return <span className="ml-1 text-pl-pink">{sortConfig.direction === 'desc' ? '↓' : '↑'}</span>;
-  };
-
   return (
     <div className="bg-pl-purple min-h-screen py-10 text-white">
       <div className="container mx-auto px-4">
@@ -164,19 +175,19 @@ export default function Stats() {
                         <th className="p-4 w-16">Rank</th>
                         <th className="p-4">Player</th>
                         <th onClick={() => handleSort('matches')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            Played <SortIcon colKey="matches" />
+                            Played <SortIcon colKey="matches" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('goals')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            Goals <SortIcon colKey="goals" />
+                            Goals <SortIcon colKey="goals" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('assists')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            Assists <SortIcon colKey="assists" />
+                            Assists <SortIcon colKey="assists" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('motm')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            MOTM <SortIcon colKey="motm" />
+                            MOTM <SortIcon colKey="motm" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('own_goals')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            OG <SortIcon colKey="own_goals" />
+                            OG <SortIcon colKey="own_goals" sortConfig={sortConfig} />
                         </th>
                     </tr>
                     </thead>

@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { Match } from '@/types/database';
-import MatchFixture from '@/components/MatchFixture';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import type { Match } from "@/types/database";
+import MatchFixture from "@/components/MatchFixture";
+import { Link } from "react-router-dom";
 
 export default function Fixtures() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -12,10 +12,10 @@ export default function Fixtures() {
   const fetchMatches = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
-      .from('matches')
-      .select('*, match_votes(*, player:players(*))')
-      .eq('season', season);
-    
+      .from("matches")
+      .select("*, match_votes(*, player:players(*))")
+      .eq("season", season);
+
     if (data) setMatches(data);
     setLoading(false);
   }, [season]);
@@ -26,11 +26,11 @@ export default function Fixtures() {
 
   // Phân loại trận đấu
   const upcomingMatches = matches
-    .filter(m => m.status === 'Upcoming')
+    .filter((m) => m.status === "Upcoming")
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Gần nhất lên đầu
 
   const finishedMatches = matches
-    .filter(m => m.status === 'Finished' || m.status === 'Live')
+    .filter((m) => m.status === "Finished" || m.status === "Live")
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Mới nhất lên đầu
 
   return (
@@ -38,11 +38,15 @@ export default function Fixtures() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
           <div>
-            <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">Fixtures & Results</h1>
-            <p className="text-gray-400 mt-2 font-bold uppercase tracking-widest text-sm underline decoration-pl-green decoration-4">The Road to Glory</p>
+            <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">
+              Fixtures
+            </h1>
+            <p className="text-gray-400 mt-2 font-bold uppercase tracking-widest text-sm underline decoration-pl-green decoration-4">
+              The Road to Glory
+            </p>
           </div>
-          <select 
-            value={season} 
+          <select
+            value={season}
             onChange={(e) => setSeason(Number(e.target.value))}
             className="border-2 border-pl-gray rounded-xl p-3 font-heading font-bold text-pl-purple cursor-pointer bg-white outline-none focus:border-pl-purple"
           >
@@ -52,53 +56,65 @@ export default function Fixtures() {
         </div>
 
         {loading ? (
-            <div className="text-center py-20 animate-pulse font-heading text-2xl text-gray-400 uppercase">Preparing Matchday...</div>
+          <div className="text-center py-20 animate-pulse font-heading text-2xl text-gray-400 uppercase">
+            Preparing Matchday...
+          </div>
         ) : (
-            <div className="space-y-12 max-w-4xl mx-auto">
-              
-              {/* --- UPCOMING SECTION --- */}
-              <div>
-                  <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
-                      <span className="w-2 h-8 bg-pl-pink rounded-full"></span>
-                      Upcoming Fixtures
-                  </h2>
-                  {upcomingMatches.length > 0 ? (
-                      <div className="space-y-4">
-                          {upcomingMatches.map(match => (
-                              <Link key={match.id} to={`/fixtures/${match.id}`} className="block transition-transform hover:scale-[1.01]">
-                                  <MatchFixture match={match} />
-                              </Link>
-                          ))}
-                      </div>
-                  ) : (
-                      <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
-                          <p className="text-gray-400 font-bold uppercase text-sm">No upcoming matches scheduled</p>
-                      </div>
-                  )}
-              </div>
-
-              {/* --- RESULTS SECTION --- */}
-              <div>
-                  <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
-                      <span className="w-2 h-8 bg-pl-green rounded-full"></span>
-                      Match Results
-                  </h2>
-                  {finishedMatches.length > 0 ? (
-                      <div className="space-y-4">
-                          {finishedMatches.map(match => (
-                              <Link key={match.id} to={`/fixtures/${match.id}`} className="block transition-transform hover:scale-[1.01]">
-                                  <MatchFixture match={match} />
-                              </Link>
-                          ))}
-                      </div>
-                  ) : (
-                      <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
-                          <p className="text-gray-400 font-bold uppercase text-sm">No match results yet</p>
-                      </div>
-                  )}
-              </div>
-
+          <div className="space-y-12 max-w-4xl mx-auto">
+            {/* --- UPCOMING SECTION --- */}
+            <div>
+              <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
+                <span className="w-2 h-8 bg-pl-pink rounded-full"></span>
+                Upcoming
+              </h2>
+              {upcomingMatches.length > 0 ? (
+                <div className="space-y-4">
+                  {upcomingMatches.map((match) => (
+                    <Link
+                      key={match.id}
+                      to={`/fixtures/${match.id}`}
+                      className="block transition-transform hover:scale-[1.01]"
+                    >
+                      <MatchFixture match={match} />
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
+                  <p className="text-gray-400 font-bold uppercase text-sm">
+                    No upcoming matches scheduled
+                  </p>
+                </div>
+              )}
             </div>
+
+            {/* --- RESULTS SECTION --- */}
+            <div>
+              <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
+                <span className="w-2 h-8 bg-pl-green rounded-full"></span>
+                Match Results
+              </h2>
+              {finishedMatches.length > 0 ? (
+                <div className="space-y-4">
+                  {finishedMatches.map((match) => (
+                    <Link
+                      key={match.id}
+                      to={`/fixtures/${match.id}`}
+                      className="block transition-transform hover:scale-[1.01]"
+                    >
+                      <MatchFixture match={match} />
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
+                  <p className="text-gray-400 font-bold uppercase text-sm">
+                    No match results yet
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>

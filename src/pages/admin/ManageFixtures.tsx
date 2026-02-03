@@ -10,7 +10,44 @@ interface ManageFixturesProps {
   onDeleteRequest: (id: number) => void;
 }
 
-export default function ManageFixtures({ matches, players, onRefresh, onDeleteRequest }: ManageFixturesProps) {
+const StatControl = ({ label, value, onChange, color, icon }: any) => (
+  <div
+    className={`bg-white p-4 rounded-3xl border-2 ${color} shadow-sm flex flex-col items-center`}
+  >
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-xl">{icon}</span>
+      <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+        {label}
+      </span>
+    </div>
+    <div className="flex items-center gap-4">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(0, value - 1))}
+        className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center font-bold text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer"
+      >
+        -
+      </button>
+      <span className="text-3xl font-heading font-bold w-8 text-center">
+        {value}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(value + 1)}
+        className="w-10 h-10 rounded-full bg-pl-purple text-white flex items-center justify-center font-bold hover:bg-pl-pink transition-colors shadow-md cursor-pointer"
+      >
+        +
+      </button>
+    </div>
+  </div>
+);
+
+export default function ManageFixtures({
+  matches,
+  players,
+  onRefresh,
+  onDeleteRequest,
+}: ManageFixturesProps) {
   const [editingMatch, setEditingMatch] = useState<Partial<Match>>({ season: 2026, status: 'Upcoming' });
   const [showForm, setShowForm] = useState(false);
   const [statsMatchId, setStatsMatchId] = useState<number | null>(null);
@@ -107,20 +144,6 @@ export default function ManageFixtures({ matches, players, onRefresh, onDeleteRe
     const { data } = await supabase.from('match_stats').select('*, player:players(*)').eq('match_id', statsMatchId);
     if (data) setCurrentMatchStats(data);
   };
-
-  const StatControl = ({ label, value, onChange, color, icon }: any) => (
-    <div className={`bg-white p-4 rounded-3xl border-2 ${color} shadow-sm flex flex-col items-center`}>
-        <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">{icon}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</span>
-        </div>
-        <div className="flex items-center gap-4">
-            <button type="button" onClick={() => onChange(Math.max(0, value - 1))} className="w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center font-bold text-gray-400 hover:bg-gray-100 transition-colors cursor-pointer">-</button>
-            <span className="text-3xl font-heading font-bold w-8 text-center">{value}</span>
-            <button type="button" onClick={() => onChange(value + 1)} className="w-10 h-10 rounded-full bg-pl-purple text-white flex items-center justify-center font-bold hover:bg-pl-pink transition-colors shadow-md cursor-pointer">+</button>
-        </div>
-    </div>
-  );
 
   return (
     <div className="grid lg:grid-cols-12 gap-8 items-start text-pl-purple text-left font-sans">

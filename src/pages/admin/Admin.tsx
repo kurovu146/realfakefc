@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Player, Match } from '@/types/database';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import ManageSquad from './ManageSquad';
 import ManageFixtures from './ManageFixtures';
@@ -14,7 +14,7 @@ export default function Admin() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [activeTab, setActiveTab] = useState<'players' | 'matches' | 'settings'>('players');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Global Delete State
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'player' | 'match' | 'stat', id: number } | null>(null);

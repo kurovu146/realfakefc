@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Player } from '@/types/database';
 import PlayerCard from '@/components/PlayerCard';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 

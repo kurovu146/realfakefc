@@ -17,41 +17,43 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const fetchNotifications = async () => {
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    if (data) {
-      setNotifications(data);
-      checkUnread(data);
-    }
-  };
-
-  const checkUnread = (data: Notification[]) => {
-    const readIds = JSON.parse(localStorage.getItem('read_notifications') || '[]');
-    const count = data.filter(n => !readIds.includes(n.id)).length;
-    setUnreadCount(count);
-  };
-
   useEffect(() => {
+    const fetchNotifications = async () => {
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (data) {
+        setNotifications(data);
+        const readIds = JSON.parse(
+          localStorage.getItem("read_notifications") || "[]",
+        );
+        const count = data.filter((n) => !readIds.includes(n.id)).length;
+        setUnreadCount(count);
+      }
+    };
+
     fetchNotifications();
 
     // Realtime subscription
     const channel = supabase
-      .channel('public_notifications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, 
+      .channel("public_notifications")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
         (payload) => {
-            const newNoti = payload.new as Notification;
-            setNotifications(prev => [newNoti, ...prev]);
-            setUnreadCount(prev => prev + 1);
-        }
+          const newNoti = payload.new as Notification;
+          setNotifications((prev) => [newNoti, ...prev]);
+          setUnreadCount((prev) => prev + 1);
+        },
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Close dropdown when clicking outside
