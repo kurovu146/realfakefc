@@ -26,9 +26,9 @@ export default function TeamSettings() {
       if (target === 'logo') setSettings(prev => ({ ...prev, logo_url: publicUrl }));
       else setSettings(prev => ({ ...prev, banner_url: publicUrl }));
       
-      toast.success(`${target} uploaded! Remember to save.`);
+      toast.success(`${target} đã tải lên! Nhớ lưu lại.`);
     } catch (error: any) {
-      toast.error('Upload failed: ' + error.message);
+      toast.error('Tải lên thất bại: ' + error.message);
     }
   };
 
@@ -37,39 +37,39 @@ export default function TeamSettings() {
     setLoading(true);
     const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
     if (error) toast.error(error.message);
-    else toast.success('Settings updated!');
+    else toast.success('Đã cập nhật cài đặt!');
     setLoading(false);
   };
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl border border-gray-50 animate-in fade-in">
-        <h3 className="text-xl md:text-2xl font-heading font-bold mb-8 uppercase border-b pb-4">General Team Identity</h3>
+        <h3 className="text-xl md:text-2xl font-heading font-bold mb-8 uppercase border-b pb-4">Nhận diện đội bóng</h3>
         <form onSubmit={saveSettings} className="space-y-8">
             <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Team Display Name</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Tên hiển thị đội</label>
                 <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-base md:text-lg font-heading font-bold outline-none" value={settings.team_name} onChange={e => setSettings({...settings, team_name: e.target.value})} />
             </div>
             <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Contact Phone Number</label>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 ml-1">Số điện thoại liên hệ</label>
                 <input className="border-2 border-gray-50 p-4 w-full rounded-2xl focus:border-pl-purple bg-gray-50 text-base md:text-lg font-mono font-bold outline-none" value={settings.contact_phone} onChange={e => setSettings({...settings, contact_phone: e.target.value})} />
             </div>
             <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Official Logo</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Logo chính thức</label>
                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-pl-gray/20 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
                         {settings.logo_url ? <img src={settings.logo_url} className="w-full h-full object-contain p-4" /> : <span className="text-4xl">⚽</span>}
-                        <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"><span className="text-white text-[9px] font-bold uppercase">Upload</span><input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'logo')} /></label>
+                        <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"><span className="text-white text-[9px] font-bold uppercase">Tải lên</span><input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'logo')} /></label>
                     </div>
                 </div>
                 <div className="space-y-4">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Main Banner</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block ml-1">Banner chính</label>
                     <div className="w-full h-24 md:h-32 rounded-3xl bg-pl-gray/20 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
                         {settings.banner_url ? <img src={settings.banner_url} className="w-full h-full object-cover" /> : <span className="text-4xl">🖼️</span>}
-                        <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"><span className="text-white text-[9px] font-bold uppercase">Upload</span><input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'banner')} /></label>
+                        <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"><span className="text-white text-[9px] font-bold uppercase">Tải lên</span><input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'banner')} /></label>
                     </div>
                 </div>
             </div>
-            <button disabled={loading} className="w-full bg-pl-purple text-white font-bold py-5 rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl uppercase text-xs tracking-[0.2em] mt-4 cursor-pointer disabled:opacity-50">{loading ? 'Saving...' : 'Save Team Identity'}</button>
+            <button disabled={loading} className="w-full bg-pl-purple text-white font-bold py-5 rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl uppercase text-xs tracking-[0.2em] mt-4 cursor-pointer disabled:opacity-50">{loading ? 'Đang lưu...' : 'Lưu thông tin đội'}</button>
         </form>
     </div>
   );

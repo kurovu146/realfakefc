@@ -2,7 +2,7 @@ export interface Player {
   id: number;
   name: string;
   number: number;
-  position: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
+  position: 'Thủ môn' | 'Hậu vệ' | 'Tiền vệ' | 'Tiền đạo' | 'Quản lý';
   status?: 'Active' | 'Injured';
   nickname?: string;
   email?: string;

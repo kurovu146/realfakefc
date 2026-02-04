@@ -27,11 +27,11 @@ export default function Header() {
   }, []);
 
   const navItems = [
-    { label: "Home", path: "/" },
-    { label: "Fixtures", path: "/fixtures" },
-    { label: "Players", path: "/players" },
-    { label: "Stats", path: "/stats" },
-    ...(isAdmin ? [{ label: "Admin", path: "/admin" }] : []),
+    { label: "Trang chủ", path: "/" },
+    { label: "Lịch thi đấu", path: "/fixtures" },
+    { label: "Cầu thủ", path: "/players" },
+    { label: "Thống kê", path: "/stats" },
+    ...(isAdmin ? [{ label: "Quản trị", path: "/admin" }] : []),
   ];
 
   // Chỉ coi là "Đã đăng nhập" nếu user tồn tại VÀ nằm trong Whitelist
@@ -84,7 +84,7 @@ export default function Header() {
                     isAdmin ? "text-pl-green" : "text-gray-400",
                   )}
                 >
-                  {isAdmin ? "Admin" : "Member"}
+                  {isAdmin ? "Quản trị" : "Thành viên"}
                 </span>
                 <span className="text-xs opacity-70 truncate max-w-25">
                   {user?.email}
@@ -116,7 +116,7 @@ export default function Header() {
               to="/login"
               className="ml-4 bg-pl-green text-pl-purple hover:bg-white text-[10px] font-bold py-2 px-5 rounded-full transition-all cursor-pointer shadow-md uppercase tracking-widest"
             >
-              LOGIN
+              ĐĂNG NHẬP
             </Link>
           )}
         </nav>
@@ -171,7 +171,7 @@ export default function Header() {
                 }}
                 className="text-left py-2 text-red-400 font-bold border-l-4 border-transparent pl-4 uppercase cursor-pointer"
               >
-                Logout ({isAdmin ? "Admin" : "Member"})
+                Đăng xuất ({isAdmin ? "Quản trị" : "Thành viên"})
               </button>
             ) : (
               <Link
@@ -179,7 +179,7 @@ export default function Header() {
                 onClick={() => setIsOpen(false)}
                 className="py-2 text-pl-green font-bold border-l-4 border-transparent pl-4 uppercase cursor-pointer"
               >
-                Login
+                Đăng nhập
               </Link>
             )}
           </nav>

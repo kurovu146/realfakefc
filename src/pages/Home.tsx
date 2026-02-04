@@ -124,7 +124,7 @@ export default function Home() {
     const { data: mgr } = await supabase
       .from("players")
       .select("*")
-      .or("position.eq.Manager,number.eq.10")
+      .or("position.eq.Quản lý,number.eq.14")
       .limit(1)
       .maybeSingle();
     if (mgr) setManager(mgr);
@@ -149,7 +149,7 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10 py-12 md:py-20 flex flex-col md:flex-row items-center">
           <div className="md:w-2/3 text-left w-full">
             <span className="inline-flex items-center gap-2 py-1 px-3 bg-pl-green text-pl-purple font-bold uppercase text-[9px] tracking-[0.2em] mb-4 rounded-full border border-white/20">
-              Official Portal
+              Cổng thông tin chính thức
             </span>
             <h1 className="text-4xl md:text-8xl font-heading font-bold uppercase leading-tight md:leading-[0.9] mb-6 drop-shadow-xl tracking-tight">
               {settings.team_name.split(" ")[0]}
@@ -159,20 +159,21 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-base md:text-xl opacity-80 max-w-xl mb-8 leading-relaxed font-medium">
-              Since 2014. A brotherhood forged on the pitch, united by passion.
+              Từ năm 2014. Tình anh em được tôi luyện trên sân cỏ, gắn kết bởi
+              đam mê.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/players"
                 className="bg-white text-pl-purple font-bold py-3 px-8 rounded-xl hover:bg-pl-green transition-all uppercase text-[10px] md:text-xs tracking-widest shadow-xl active:scale-95"
               >
-                The Squad
+                Đội hình
               </Link>
               <Link
                 to="/fixtures"
                 className="bg-pl-purple/40 backdrop-blur-md border border-white/20 text-white font-bold py-3 px-8 rounded-xl hover:bg-white/10 transition-all uppercase text-[10px] md:text-xs tracking-widest active:scale-95"
               >
-                Fixtures
+                Lịch đấu
               </Link>
             </div>
           </div>
@@ -184,7 +185,7 @@ export default function Home() {
                 className="block bg-white/10 backdrop-blur-xl border border-white/20 p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] hover:bg-white/20 transition-all shadow-2xl group relative overflow-hidden"
               >
                 <h3 className="text-pl-green text-center mb-6 uppercase font-bold tracking-[0.3em] text-[9px] opacity-80">
-                  Next Matchday
+                  Vòng đấu tiếp theo
                 </h3>
                 <div className="flex justify-between items-center mb-6">
                   <div className="text-center w-1/3 group-hover:scale-110 transition-transform">
@@ -241,7 +242,7 @@ export default function Home() {
         <div className="container mx-auto px-4 text-left md:text-center relative z-10 w-full text-pl-purple">
           <Quote className="w-8 h-8 md:w-12 md:h-12 mb-3 opacity-50 md:mx-auto" />
           <h2 className="text-lg md:text-4xl font-heading font-bold uppercase tracking-tight max-w-3xl md:mx-auto leading-tight">
-            "It's not about the stars, it's about the bond."
+            "Không phải là những ngôi sao, mà là sự gắn kết."
           </h2>
         </div>
       </section>
@@ -251,17 +252,18 @@ export default function Home() {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="space-y-4 text-left w-full">
             <h2 className="text-3xl md:text-5xl font-heading font-bold uppercase leading-none">
-              The Formation
+              Lịch sử hình thành
             </h2>
             <div className="w-12 h-1.5 bg-pl-pink rounded-full"></div>
             <p className="text-sm md:text-lg text-gray-600 leading-relaxed">
-              Founded in <strong className="font-bold">2014</strong>, RealFake
-              FC started as a casual gathering of football enthusiasts. Over a
-              decade, the passion grew into a committed brotherhood.
+              Được thành lập vào năm <strong className="font-bold">2014</strong>
+              , RealFake FC bắt đầu như một buổi tụ tập ngẫu hứng của những
+              người đam mê bóng đá. Qua một thập kỷ, niềm đam mê ấy đã lớn mạnh
+              thành một tình anh em gắn kết.
             </p>
             <p className="text-sm md:text-lg text-gray-600 leading-relaxed">
-              We believe in fair play and the joy of the game. After 10 years,
-              our core values remain unchanged.
+              Chúng tôi tin vào lối chơi đẹp và niềm vui của trận đấu. Sau 10
+              năm, những giá trị cốt lõi của chúng tôi vẫn không thay đổi.
             </p>
           </div>
           <div className="relative w-full">
@@ -294,37 +296,37 @@ export default function Home() {
               </div>
               <div className="md:w-2/3 text-left w-full">
                 <span className="text-pl-green font-bold uppercase tracking-widest text-[9px] mb-2 block">
-                  The Leader
+                  Thủ lĩnh
                 </span>
                 <h2 className="text-4xl md:text-7xl font-heading font-bold uppercase mb-4 md:mb-6 leading-none tracking-tight">
                   {manager.name}
                 </h2>
                 <p className="text-lg md:text-2xl opacity-80 font-light italic mb-6">
-                  "Our strength lies in our unity."
+                  "Sức mạnh của chúng tôi nằm ở sự đoàn kết."
                 </p>
                 <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-6 max-w-sm">
                   <div>
+                    <div className="text-[8px] uppercase opacity-60 tracking-widest font-bold">
+                      Từ năm
+                    </div>
                     <div className="text-xl md:text-3xl font-heading font-bold text-pl-pink">
                       2014
                     </div>
-                    <div className="text-[8px] uppercase opacity-60 tracking-widest font-bold">
-                      Since
-                    </div>
                   </div>
                   <div>
+                    <div className="text-[8px] uppercase opacity-60 tracking-widest font-bold">
+                      Vai trò
+                    </div>
                     <div className="text-xl md:text-3xl font-heading font-bold text-pl-green">
                       MGR
                     </div>
-                    <div className="text-[8px] uppercase opacity-60 tracking-widest font-bold">
-                      Role
-                    </div>
                   </div>
                   <div>
+                    <div className="text-[8px] uppercase opacity-60 tracking-widest font-bold">
+                      Q.Tịch
+                    </div>
                     <div className="text-xl md:text-3xl font-heading font-bold text-white">
                       VN
-                    </div>
-                    <div className="text-[8px] uppercase opacity-60 tracking-widest font-bold">
-                      NAT
                     </div>
                   </div>
                 </div>
@@ -344,10 +346,10 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-sm md:text-xl font-heading font-bold uppercase md:mb-2 leading-none">
-                  Match Time
+                  Giờ thi đấu
                 </h3>
                 <p className="text-[10px] md:text-base text-gray-500 font-bold uppercase tracking-widest md:tracking-normal">
-                  Wednesday 20:45
+                  Thứ Tư 20:45
                 </p>
               </div>
             </div>
@@ -357,10 +359,10 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-sm md:text-xl font-heading font-bold uppercase md:mb-2 leading-none">
-                  Home Ground
+                  Sân nhà
                 </h3>
                 <p className="text-[10px] md:text-base text-gray-500 font-bold uppercase tracking-widest md:tracking-normal">
-                  La Thanh Field
+                  Sân Bóng La Thành
                 </p>
               </div>
             </div>
@@ -370,7 +372,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-sm md:text-xl font-heading font-bold uppercase md:mb-2 leading-none">
-                  Booking
+                  Đặt sân
                 </h3>
                 <a
                   href={`tel:${settings.contact_phone}`}
@@ -390,17 +392,17 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 border-b-2 border-gray-50 pb-4 gap-2 w-full">
             <div className="text-left">
               <h2 className="text-3xl md:text-5xl font-heading font-bold uppercase leading-none tracking-tight">
-                Recent Results
+                Kết quả gần đây
               </h2>
               <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 border-l-4 border-pl-pink pl-2">
-                Matchday Reports
+                Báo cáo trận đấu
               </p>
             </div>
             <Link
               to="/fixtures"
               className="text-pl-pink font-bold hover:text-pl-purple transition-all flex items-center gap-1 uppercase text-[10px] tracking-widest cursor-pointer"
             >
-              All Fixtures &rsaquo;
+              Tất cả trận đấu &rsaquo;
             </Link>
           </div>
           {latestMatches.length > 0 ? (
@@ -417,7 +419,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="py-10 text-center text-gray-300 italic uppercase text-sm tracking-widest font-heading font-bold">
-              No results found
+              Không tìm thấy kết quả
             </div>
           )}
         </div>
@@ -429,17 +431,17 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 border-b-2 border-white pb-4 gap-2 w-full">
             <div className="text-left">
               <h2 className="text-3xl md:text-5xl font-heading font-bold uppercase leading-none tracking-tight">
-                Key Players
+                Cầu thủ nổi bật
               </h2>
               <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 border-l-4 border-pl-green pl-2">
-                Top performers
+                Những người xuất sắc nhất
               </p>
             </div>
             <Link
               to="/players"
               className="text-pl-pink font-bold hover:text-pl-purple transition-all flex items-center gap-1 uppercase text-[10px] tracking-widest cursor-pointer"
             >
-              Full Roster &rsaquo;
+              Danh sách đầy đủ &rsaquo;
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
@@ -447,22 +449,22 @@ export default function Home() {
               <div key={player.id} className="relative pt-4 cursor-pointer">
                 {index === 0 && (
                   <span className="absolute top-0 left-4 z-40 bg-pl-purple text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded shadow-lg border border-white/20">
-                    Top Scorer
+                    Vua phá lưới
                   </span>
                 )}
                 {index === 1 && (
                   <span className="absolute top-0 left-4 z-40 bg-pl-green text-pl-purple text-[8px] font-bold uppercase px-2 py-0.5 rounded shadow-lg border border-pl-purple/10">
-                    Assist King
+                    Vua kiến tạo
                   </span>
                 )}
                 {index === 2 && (
                   <span className="absolute top-0 left-4 z-40 bg-gray-600 text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded shadow-lg border border-white/20">
-                    Iron Man
+                    Người không phổi
                   </span>
                 )}
                 {index === 3 && (
                   <span className="absolute top-0 left-4 z-40 bg-pl-pink text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded shadow-lg border border-white/20">
-                    MVP Efficiency
+                    MVP Hiệu quả
                   </span>
                 )}
                 <PlayerCard player={player} />

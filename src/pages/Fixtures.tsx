@@ -39,10 +39,10 @@ export default function Fixtures() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
           <div>
             <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">
-              Fixtures
+              Lịch thi đấu
             </h1>
             <p className="text-gray-400 mt-2 font-bold uppercase tracking-widest text-sm underline decoration-pl-green decoration-4">
-              The Road to Glory
+              Đường tới vinh quang
             </p>
           </div>
           <select
@@ -50,14 +50,14 @@ export default function Fixtures() {
             onChange={(e) => setSeason(Number(e.target.value))}
             className="border-2 border-pl-gray rounded-xl p-3 font-heading font-bold text-pl-purple cursor-pointer bg-white outline-none focus:border-pl-purple"
           >
-            <option value={2026}>Season 2026</option>
-            <option value={2025}>Season 2025</option>
+            <option value={2026}>Mùa giải 2026</option>
+            <option value={2025}>Mùa giải 2025</option>
           </select>
         </div>
 
         {loading ? (
           <div className="text-center py-20 animate-pulse font-heading text-2xl text-gray-400 uppercase">
-            Preparing Matchday...
+            Đang chuẩn bị lịch đấu...
           </div>
         ) : (
           <div className="space-y-12 max-w-4xl mx-auto">
@@ -65,7 +65,7 @@ export default function Fixtures() {
             <div>
               <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
                 <span className="w-2 h-8 bg-pl-pink rounded-full"></span>
-                Upcoming
+                Sắp diễn ra
               </h2>
               {upcomingMatches.length > 0 ? (
                 <div className="space-y-4">
@@ -82,7 +82,7 @@ export default function Fixtures() {
               ) : (
                 <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
                   <p className="text-gray-400 font-bold uppercase text-sm">
-                    No upcoming matches scheduled
+                    Chưa có trận đấu nào sắp tới
                   </p>
                 </div>
               )}
@@ -92,7 +92,7 @@ export default function Fixtures() {
             <div>
               <h2 className="text-2xl font-bold uppercase text-pl-purple mb-6 flex items-center gap-3">
                 <span className="w-2 h-8 bg-pl-green rounded-full"></span>
-                Match Results
+                Kết quả thi đấu
               </h2>
               {finishedMatches.length > 0 ? (
                 <div className="space-y-4">
@@ -109,7 +109,7 @@ export default function Fixtures() {
               ) : (
                 <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-200 text-center">
                   <p className="text-gray-400 font-bold uppercase text-sm">
-                    No match results yet
+                    Chưa có kết quả nào
                   </p>
                 </div>
               )}

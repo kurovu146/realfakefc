@@ -90,17 +90,17 @@ export default function MatchDetail() {
 
     if (error) {
       console.error(error);
-      toast.error('Submission failed: ' + error.message);
+      toast.error('Gửi thất bại: ' + error.message);
     } else {
-      toast.success('Vote recorded!');
-      setMessage('Vote recorded!');
+      toast.success('Đã ghi nhận!');
+      setMessage('Đã ghi nhận!');
       setTimeout(() => setMessage(''), 3000);
       fetchMatchData(match.id.toString());
     }
     setLoading(false);
   }
 
-  if (!match) return <div className="text-center py-20 text-pl-purple font-heading text-2xl animate-pulse uppercase">Matchday Loading...</div>;
+  if (!match) return <div className="text-center py-20 text-pl-purple font-heading text-2xl animate-pulse uppercase">Đang tải trận đấu...</div>;
 
   const goingVotes = votes.filter(v => v.is_going);
   const missingVotes = votes.filter(v => !v.is_going);
@@ -135,7 +135,7 @@ export default function MatchDetail() {
       <div className="container mx-auto px-4 mt-8 grid lg:grid-cols-2 gap-8">
          <div className="space-y-8">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-               <h3 className="text-xl font-heading font-bold text-pl-purple mb-6 border-b border-gray-50 pb-3 uppercase tracking-wider text-left">Match Records</h3>
+               <h3 className="text-xl font-heading font-bold text-pl-purple mb-6 border-b border-gray-50 pb-3 uppercase tracking-wider text-left">Kết quả trận đấu</h3>
                {stats.length > 0 ? (
                  <ul className="space-y-4">
                    {stats.map(stat => (
@@ -143,7 +143,7 @@ export default function MatchDetail() {
                         <img src={stat.player?.image} className="w-10 h-10 rounded-full bg-gray-100 object-cover border-2 border-transparent group-hover:border-pl-green transition-all" />
                         <div className="flex-grow text-left">
                             <span className="font-bold text-sm block">{stat.player?.name}</span>
-                            <span className="text-[10px] text-gray-400 uppercase font-bold">{stat.player?.nickname || 'Official Player'}</span>
+                            <span className="text-[10px] text-gray-400 uppercase font-bold">{stat.player?.nickname || 'Cầu thủ chính thức'}</span>
                         </div>
                         <div className="flex gap-2 text-[10px] font-bold text-white">
                            {stat.goals > 0 && <span className="bg-pl-purple px-2 py-1 rounded-md shadow-sm">{stat.goals} G</span>}
@@ -154,7 +154,7 @@ export default function MatchDetail() {
                    ))}
                  </ul>
                ) : (
-                 <p className="text-gray-400 italic text-sm text-center py-10">Waiting for match results...</p>
+                 <p className="text-gray-400 italic text-sm text-center py-10">Đang chờ kết quả trận đấu...</p>
                )}
             </div>
          </div>
@@ -162,26 +162,26 @@ export default function MatchDetail() {
          <div className="space-y-8">
             <div className="bg-white p-6 rounded-2xl shadow-sm border-t-8 border-pl-pink border border-gray-100">
               <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-heading font-bold text-pl-purple uppercase text-left">Attendance</h3>
+                <h3 className="text-xl font-heading font-bold text-pl-purple uppercase text-left">Điểm danh</h3>
                 <span className="bg-pl-green text-pl-purple font-bold px-4 py-1.5 rounded-full text-xs shadow-sm">
-                   {goingVotes.length} Ready to Play
+                   {goingVotes.length} Sẵn sàng thi đấu
                 </span>
               </div>
               
               {match.status === 'Upcoming' && (
                 !user || !isWhitelisted ? (
                     <div className="bg-pl-purple text-white p-6 rounded-xl mb-8 text-center shadow-lg">
-                        <p className="text-sm font-bold mb-4 uppercase tracking-widest">Authorized Team Access Only</p>
+                        <p className="text-sm font-bold mb-4 uppercase tracking-widest">Chỉ dành cho thành viên được ủy quyền</p>
                         <Link to="/login" className="inline-block bg-pl-green text-pl-purple text-xs font-bold px-8 py-3 rounded-full hover:bg-white transition-all transform hover:scale-105 cursor-pointer shadow-md">
-                            SIGN IN TO VOTE
+                            ĐĂNG NHẬP ĐỂ BÌNH CHỌN
                         </Link>
                     </div>
                 ) : !myPlayerProfile ? (
                     <div className="bg-amber-50 border-2 border-dashed border-amber-200 p-6 rounded-xl mb-8 text-center">
-                        <p className="text-amber-800 font-bold mb-2">Profile Not Linked</p>
-                        <p className="text-amber-600 text-xs mb-4">Your email is authorized, but not yet linked to a player profile.</p>
+                        <p className="text-amber-800 font-bold mb-2">Hồ sơ chưa liên kết</p>
+                        <p className="text-amber-600 text-xs mb-4">Email của bạn đã được cấp quyền, nhưng chưa liên kết với hồ sơ cầu thủ.</p>
                         <Link to="/players" className="inline-block bg-amber-500 text-white text-xs font-bold px-6 py-2.5 rounded-lg hover:bg-amber-600 transition-all cursor-pointer shadow-sm">
-                            CLAIM YOUR PROFILE
+                            NHẬN HỒ SƠ CỦA BẠN
                         </Link>
                     </div>
                 ) : (
@@ -189,7 +189,7 @@ export default function MatchDetail() {
                         <div className="absolute top-0 left-0 w-1 h-full bg-pl-green group-hover:w-2 transition-all"></div>
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <h4 className="font-bold text-xs text-gray-400 uppercase mb-1">Voting as</h4>
+                                <h4 className="font-bold text-xs text-gray-400 uppercase mb-1">Bình chọn với tư cách</h4>
                                 <div className="flex items-center gap-2">
                                     <img src={myPlayerProfile.image} className="w-6 h-6 rounded-full object-cover" />
                                     <span className="font-bold text-pl-purple">{myPlayerProfile.name}</span>
@@ -198,14 +198,14 @@ export default function MatchDetail() {
                             <div className="flex gap-2">
                                 <label className={cn("flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border-2 transition-all", isGoing ? "border-green-500 bg-green-50 shadow-sm" : "border-gray-100 opacity-60 hover:bg-gray-50")}>
                                     <input type="radio" name="going" checked={isGoing} onChange={() => setIsGoing(true)} className="hidden" />
-                                    <span className={cn("text-xs font-bold uppercase", isGoing ? "text-green-700" : "text-gray-400")}>I'm In</span>
+                                    <span className={cn("text-xs font-bold uppercase", isGoing ? "text-green-700" : "text-gray-400")}>Tham gia</span>
                                 </label>
                                 <label className={cn("flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-lg border-2 transition-all", !isGoing ? "border-red-500 bg-red-50 shadow-sm" : "border-gray-100 opacity-60 hover:bg-gray-50")}>
                                     <input type="radio" name="going" checked={!isGoing} onChange={() => setIsGoing(false)} className="hidden" />
-                                    <span className={cn("text-xs font-bold uppercase", !isGoing ? "text-red-700" : "text-gray-400")}>Out</span>
+                                    <span className={cn("text-xs font-bold uppercase", !isGoing ? "text-red-700" : "text-gray-400")}>Vắng</span>
                                 </label>
                                 <button disabled={loading} type="submit" className="bg-pl-purple text-white font-bold px-6 py-2 rounded-lg hover:bg-pl-pink transition-all cursor-pointer shadow-md disabled:opacity-50 text-xs uppercase tracking-tighter">
-                                    {loading ? '...' : 'Confirm'}
+                                    {loading ? '...' : 'Xác nhận'}
                                 </button>
                             </div>
                         </div>
@@ -217,7 +217,7 @@ export default function MatchDetail() {
               <div className="grid md:grid-cols-2 gap-8 text-left">
                   <div>
                       <h4 className="text-green-700 font-bold uppercase text-[10px] tracking-widest mb-4 border-b border-green-100 pb-2 flex justify-between">
-                          Squad Members Going ({goingVotes.length})
+                          Thành viên tham gia ({goingVotes.length})
                       </h4>
                       <div className="space-y-2">
                           {goingVotes.map(vote => (
@@ -231,12 +231,12 @@ export default function MatchDetail() {
                                   </div>
                               </div>
                           ))}
-                          {goingVotes.length === 0 && <p className="text-gray-300 italic text-[10px] py-4 text-center">No confirmations yet.</p>}
+                          {goingVotes.length === 0 && <p className="text-gray-300 italic text-[10px] py-4 text-center">Chưa có xác nhận nào.</p>}
                       </div>
                   </div>
                   <div>
                       <h4 className="text-red-700 font-bold uppercase text-[10px] tracking-widest mb-4 border-b border-red-100 pb-2 flex justify-between">
-                          Unavailable ({missingVotes.length})
+                          Vắng mặt ({missingVotes.length})
                       </h4>
                       <div className="space-y-2">
                           {missingVotes.map(vote => (
@@ -250,7 +250,7 @@ export default function MatchDetail() {
                                   </div>
                               </div>
                           ))}
-                          {missingVotes.length === 0 && <p className="text-gray-300 italic text-[10px] py-4 text-center">Full squad available!</p>}
+                          {missingVotes.length === 0 && <p className="text-gray-300 italic text-[10px] py-4 text-center">Đầy đủ đội hình!</p>}
                       </div>
                   </div>
               </div>

@@ -100,9 +100,9 @@ export default function NotificationBell() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
           <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-pl-purple text-white">
-            <h3 className="font-heading font-bold text-sm uppercase tracking-widest">Notifications</h3>
+            <h3 className="font-heading font-bold text-sm uppercase tracking-widest">Thông báo</h3>
             {unreadCount > 0 && (
-                <button onClick={markAllRead} className="text-[10px] font-bold underline hover:text-pl-green cursor-pointer">Mark all read</button>
+                <button onClick={markAllRead} className="text-[10px] font-bold underline hover:text-pl-green cursor-pointer">Đánh dấu đã đọc</button>
             )}
           </div>
           <div className="max-h-80 overflow-y-auto">
@@ -126,7 +126,7 @@ export default function NotificationBell() {
                   );
               })
             ) : (
-              <div className="p-8 text-center text-gray-300 text-xs italic">No new notifications</div>
+              <div className="p-8 text-center text-gray-300 text-xs italic">Không có thông báo mới</div>
             )}
           </div>
         </div>

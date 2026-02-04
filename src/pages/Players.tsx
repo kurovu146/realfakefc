@@ -58,9 +58,9 @@ export default function Players() {
         .getPublicUrl(filePath);
 
       setEditingPlayer(prev => prev ? { ...prev, image: `${publicUrl}?t=${Date.now()}` } : null);
-      toast.success('Avatar uploaded! Click Update to save.');
+      toast.success('Đã tải ảnh đại diện! Nhấn Cập nhật để lưu.');
     } catch (error: any) {
-      toast.error('Upload failed: ' + error.message);
+      toast.error('Tải lên thất bại: ' + error.message);
     } finally {
       setUploading(false);
     }
@@ -71,7 +71,7 @@ export default function Players() {
     if (!user || !isWhitelisted || !editingPlayer || !editingPlayer.id) return;
 
     if (user.email !== editingPlayer.email && !isAdmin) {
-        toast.error("Permission denied.");
+        toast.error("Từ chối quyền truy cập.");
         return;
     }
 
@@ -91,11 +91,11 @@ export default function Players() {
         })
         .eq('id', editingPlayer.id);
 
-    if (error) toast.error('Error: ' + error.message);
+    if (error) toast.error('Lỗi: ' + error.message);
     else {
         setEditingPlayer(null);
         await fetchPlayers();
-        toast.success('Profile updated successfully!');
+        toast.success('Cập nhật hồ sơ thành công!');
     }
     setSaveLoading(false);
   }
@@ -111,17 +111,24 @@ export default function Players() {
       <div className="container mx-auto px-4 text-left">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
-                <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">Team Squad</h1>
-                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-2 border-l-4 border-pl-green pl-2">RealFake FC Official Roster</p>
+                <h1 className="text-6xl font-heading text-pl-purple uppercase leading-none">Đội hình thi đấu</h1>
+                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-2 border-l-4 border-pl-green pl-2">Danh sách chính thức RealFake FC</p>
             </div>
-            {!user && <Link to="/login" className="bg-pl-purple text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase hover:bg-pl-pink transition-all cursor-pointer shadow-lg">Sign In</Link>}
-            {isAdmin && <span className="bg-pl-green text-pl-purple px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-pl-purple">Admin Mode</span>}
+            {!user && <Link to="/login" className="bg-pl-purple text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase hover:bg-pl-pink transition-all cursor-pointer shadow-lg">Đăng nhập</Link>}
+            {isAdmin && <span className="bg-pl-green text-pl-purple px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-pl-purple">Chế độ Admin</span>}
         </div>
         
         <div className="flex flex-wrap gap-2 mb-10">
-          {['All', 'Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Injured'].map(pos => (
-            <button key={pos} onClick={() => setFilter(pos)} className={`px-6 py-2 rounded-full font-bold text-sm transition-colors uppercase cursor-pointer ${filter === pos ? 'bg-pl-purple text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
-              {pos === 'Injured' ? '🚑 Injured' : `${pos}s`}
+          {[
+            { key: 'All', label: 'Tất cả' },
+            { key: 'Thủ môn', label: 'Thủ môn' },
+            { key: 'Hậu vệ', label: 'Hậu vệ' },
+            { key: 'Tiền vệ', label: 'Tiền vệ' },
+            { key: 'Tiền đạo', label: 'Tiền đạo' },
+            { key: 'Injured', label: '🚑 Chấn thương' }
+          ].map(pos => (
+            <button key={pos.key} onClick={() => setFilter(pos.key)} className={`px-6 py-2 rounded-full font-bold text-sm transition-colors uppercase cursor-pointer ${filter === pos.key ? 'bg-pl-purple text-white shadow-md' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'}`}>
+              {pos.label}
             </button>
           ))}
         </div>
@@ -142,7 +149,7 @@ export default function Players() {
               <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border-t-[12px] border-pl-purple relative">
                   <div className="p-8 flex justify-between items-start border-b border-gray-50">
                       <div>
-                          <h3 className="text-2xl font-heading font-bold uppercase mb-1">{editingPlayer.email === user?.email ? 'My Profile' : 'Player Card'}</h3>
+                          <h3 className="text-2xl font-heading font-bold uppercase mb-1">{editingPlayer.email === user?.email ? 'Hồ sơ của tôi' : 'Thẻ cầu thủ'}</h3>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{editingPlayer.name}</p>
                       </div>
                       <button onClick={() => { setEditingPlayer(null); }} className="text-gray-300 hover:text-red-500 text-4xl leading-none transition-colors cursor-pointer">&times;</button>
@@ -156,62 +163,62 @@ export default function Players() {
                               </div>
                               {(user?.email === editingPlayer.email || isAdmin) && (
                                 <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold uppercase text-center p-2">
-                                    {uploading ? '...' : 'Change Photo'}
+                                    {uploading ? '...' : 'Đổi ảnh'}
                                     <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={uploading} />
                                 </label>
                               )}
                           </div>
-                          {uploading && <div className="mt-2 text-pl-pink font-bold text-[10px] animate-pulse uppercase tracking-widest">Uploading...</div>}
+                          {uploading && <div className="mt-2 text-pl-pink font-bold text-[10px] animate-pulse uppercase tracking-widest">Đang tải lên...</div>}
                       </div>
 
                       {(user?.email === editingPlayer.email || isAdmin) ? (
                           <form onSubmit={handleSaveProfile} className="space-y-5 text-left">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Nickname</label>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Biệt danh</label>
                                       <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none text-sm font-bold transition-all" value={editingPlayer.nickname || ''} onChange={e => setEditingPlayer({...editingPlayer, nickname: e.target.value})} />
                                   </div>
                                   <div className="space-y-1 opacity-60">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Auth Email</label>
-                                      <div className="p-3 bg-gray-100 rounded-xl text-[10px] text-gray-500 truncate">{editingPlayer.email || 'None'}</div>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Email xác thực</label>
+                                      <div className="p-3 bg-gray-100 rounded-xl text-[10px] text-gray-500 truncate">{editingPlayer.email || 'Không có'}</div>
                                   </div>
                               </div>
                               <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Phone Number (Private)</label>
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Số điện thoại (Riêng tư)</label>
                                   <input className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none text-sm font-bold transition-all" value={editingPlayer.phone || ''} onChange={e => setEditingPlayer({...editingPlayer, phone: e.target.value})} placeholder="09xxxxxxx" />
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                   <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Height (cm)</label>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Chiều cao (cm)</label>
                                       <input type="number" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono font-bold" value={editingPlayer.height || ''} onChange={e => setEditingPlayer({...editingPlayer, height: Number(e.target.value)})} />
                                   </div>
                                   <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Weight (kg)</label>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Cân nặng (kg)</label>
                                       <input type="number" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono font-bold" value={editingPlayer.weight || ''} onChange={e => setEditingPlayer({...editingPlayer, weight: Number(e.target.value)})} />
                                   </div>
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                   <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Birth Date</label>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Ngày sinh</label>
                                       <input type="date" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono text-xs" value={editingPlayer.dob || ''} onChange={e => setEditingPlayer({...editingPlayer, dob: e.target.value})} />
                                   </div>
                                   <div className="space-y-1">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Joined Date</label>
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Ngày gia nhập</label>
                                       <input type="date" className="border-2 border-gray-50 p-3 w-full rounded-xl focus:border-pl-purple bg-gray-50 outline-none font-mono text-xs" value={editingPlayer.joined_at || ''} onChange={e => setEditingPlayer({...editingPlayer, joined_at: e.target.value})} />
                                   </div>
                               </div>
-                              <button disabled={saveLoading || uploading} className="w-full py-4 font-bold text-white bg-pl-purple rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl cursor-pointer uppercase text-xs tracking-widest disabled:opacity-50 mt-4 active:scale-95">Update Official Records</button>
+                              <button disabled={saveLoading || uploading} className="w-full py-4 font-bold text-white bg-pl-purple rounded-2xl hover:bg-pl-green hover:text-pl-purple transition-all shadow-xl cursor-pointer uppercase text-xs tracking-widest disabled:opacity-50 mt-4 active:scale-95">Cập nhật hồ sơ chính thức</button>
                           </form>
                       ) : (
                           <div className="space-y-8 text-center">
                               <div className="grid grid-cols-2 gap-4 text-left">
                                   {[
-                                      { l: 'Preferred Pos', v: editingPlayer.position, icon: '⚽' },
-                                      { l: 'Known As', v: editingPlayer.nickname || '-', icon: '🏷️' },
-                                      { l: 'Born On', v: editingPlayer.dob ? new Date(editingPlayer.dob).toLocaleDateString() : 'TBD', icon: '🎂' },
-                                      { l: 'Active Since', v: editingPlayer.joined_at ? new Date(editingPlayer.joined_at).getFullYear() : '2014', icon: '🗓️' },
-                                      { l: 'Height', v: editingPlayer.height ? `${editingPlayer.height}cm` : '-', icon: '📏' },
-                                      { l: 'Weight', v: editingPlayer.weight ? `${editingPlayer.weight}kg` : '-', icon: '⚖️' }
+                                      { l: 'Vị trí sở trường', v: editingPlayer.position, icon: '⚽' },
+                                      { l: 'Được biết đến là', v: editingPlayer.nickname || '-', icon: '🏷️' },
+                                      { l: 'Sinh ngày', v: editingPlayer.dob ? new Date(editingPlayer.dob).toLocaleDateString() : 'CXĐ', icon: '🎂' },
+                                      { l: 'Hoạt động từ', v: editingPlayer.joined_at ? new Date(editingPlayer.joined_at).getFullYear() : '2014', icon: '🗓️' },
+                                      { l: 'Chiều cao', v: editingPlayer.height ? `${editingPlayer.height}cm` : '-', icon: '📏' },
+                                      { l: 'Cân nặng', v: editingPlayer.weight ? `${editingPlayer.weight}kg` : '-', icon: '⚖️' }
                                   ].map((it, i) => (
                                       <div key={i} className="bg-gray-50 p-4 rounded-2xl border border-white shadow-sm flex flex-col items-center justify-center">
                                           <span className="text-xl mb-1">{it.icon}</span>
@@ -224,14 +231,14 @@ export default function Players() {
                               {user && editingPlayer.phone && (
                                   <div className="bg-pl-purple/5 p-4 rounded-2xl border border-pl-purple/10 flex items-center justify-between">
                                       <div className="text-left">
-                                          <span className="text-[9px] font-bold text-gray-400 block uppercase">Contact</span>
+                                          <span className="text-[9px] font-bold text-gray-400 block uppercase">Liên hệ</span>
                                           <a href={`tel:${editingPlayer.phone}`} className="font-bold text-pl-purple hover:underline">{editingPlayer.phone}</a>
                                       </div>
-                                      <div className="bg-pl-green text-pl-purple px-2 py-1 rounded text-[9px] font-bold uppercase">Member Only</div>
+                                      <div className="bg-pl-green text-pl-purple px-2 py-1 rounded text-[9px] font-bold uppercase">Chỉ dành cho thành viên</div>
                                   </div>
                               )}
 
-                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-100 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Close Profile</button>
+                              <button onClick={() => setEditingPlayer(null)} className="w-full py-4 font-bold text-gray-400 bg-gray-100 rounded-2xl hover:bg-gray-100 transition-all cursor-pointer uppercase text-xs tracking-widest active:scale-95">Đóng hồ sơ</button>
                           </div>
                       )}
                   </div>

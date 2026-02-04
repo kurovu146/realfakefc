@@ -59,7 +59,7 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
           <div className="mt-1 flex items-center gap-1.5">
             <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
             <span className="text-[9px] font-bold text-red-600 uppercase tracking-tighter">
-              Injured
+              Chấn thương
             </span>
           </div>
         )}
@@ -68,15 +68,15 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
         <div className="mt-auto pt-4 grid grid-cols-2 gap-2 border-t border-gray-100">
           <div className="flex flex-col text-left">
             <span className="text-[8px] font-bold text-gray-400 uppercase">
-              Birth Date
+              Ngày sinh
             </span>
             <span className="text-[10px] font-bold text-pl-purple">
-              {player.dob ? new Date(player.dob).toLocaleDateString() : "TBD"}
+              {player.dob ? new Date(player.dob).toLocaleDateString() : "CXĐ"}
             </span>
           </div>
           <div className="flex flex-col text-right">
             <span className="text-[8px] font-bold text-gray-400 uppercase">
-              Joined
+              Gia nhập
             </span>
             <span className="text-[10px] font-bold text-pl-purple">
               {player.joined_at

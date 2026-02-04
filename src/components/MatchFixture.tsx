@@ -84,7 +84,7 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
       <div>
         <div className="flex justify-between items-center text-[10px] text-gray-400 mb-4 font-bold uppercase tracking-widest border-b border-gray-50 pb-2">
           <span className="truncate max-w-37.5">
-            {match.stadium || "TBD Stadium"}
+            {match.stadium || "Sân chưa xác định"}
           </span>
           <div className="flex items-center gap-2 shrink-0 ml-2">
             <span>{new Date(match.date).toLocaleDateString()}</span>
@@ -126,10 +126,10 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
       <div className="border-t border-gray-100 pt-4 mt-auto">
         <div className="flex justify-between items-center mb-3">
           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-            Squad Status
+            Trạng thái đội hình
           </span>
           <span className="bg-pl-green/20 text-pl-purple text-[9px] font-bold px-2 py-0.5 rounded-full border border-pl-green/30 uppercase">
-            {going.length} Going
+            {going.length} Tham gia
           </span>
         </div>
 
@@ -149,7 +149,7 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
           )}
           {going.length === 0 && (
             <span className="text-[9px] text-gray-300 italic">
-              No reports yet
+              Chưa có báo cáo
             </span>
           )}
         </div>
@@ -157,7 +157,7 @@ export default function MatchFixture({ match }: MatchFixtureProps) {
 
       <div className="mt-3 pt-2 border-t border-dashed border-gray-100 flex justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
         <span className="text-[10px] font-bold text-pl-pink uppercase flex items-center gap-1 tracking-widest">
-          {isFinished ? "Match Records" : "Matchday Access"}{" "}
+          {isFinished ? "Kết quả trận đấu" : "Chi tiết trận đấu"}{" "}
           <span className="text-lg leading-none">&rsaquo;</span>
         </span>
       </div>

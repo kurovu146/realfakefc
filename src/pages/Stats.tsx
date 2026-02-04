@@ -133,29 +133,29 @@ export default function Stats() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
             <div>
-                <h1 className="text-6xl font-heading text-pl-green uppercase leading-none">League Stats</h1>
-                <p className="text-pl-gray/60 mt-2 font-bold uppercase tracking-widest text-sm">RealFake FC • Season {season}</p>
+                <h1 className="text-6xl font-heading text-pl-green uppercase leading-none">Thống kê giải đấu</h1>
+                <p className="text-pl-gray/60 mt-2 font-bold uppercase tracking-widest text-sm">RealFake FC • Mùa giải {season}</p>
             </div>
             <select 
                 value={season} 
                 onChange={(e) => setSeason(Number(e.target.value))}
                 className="bg-white/10 border-2 border-white/20 rounded p-3 font-heading font-bold text-pl-green outline-none cursor-pointer"
             >
-                <option value={2026} className="bg-pl-purple text-white">Season 2026</option>
-                <option value={2025} className="bg-pl-purple text-white">Season 2025</option>
+                <option value={2026} className="bg-pl-purple text-white">Mùa giải 2026</option>
+                <option value={2025} className="bg-pl-purple text-white">Mùa giải 2025</option>
             </select>
         </div>
 
         {/* TEAM SUMMARY BANNER */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-12">
             {[
-                { label: 'Played', value: teamSummary.played, color: 'bg-white/5' },
-                { label: 'Won', value: teamSummary.won, color: 'bg-green-500/20' },
-                { label: 'Drawn', value: teamSummary.drawn, color: 'bg-blue-500/20' },
-                { label: 'Lost', value: teamSummary.lost, color: 'bg-red-500/20' },
-                { label: 'GF', value: teamSummary.gf, color: 'bg-white/5' },
-                { label: 'GA', value: teamSummary.ga, color: 'bg-white/5' },
-                { label: 'Points', value: teamSummary.points, color: 'bg-pl-pink text-white shadow-lg' },
+                { label: 'Số trận', value: teamSummary.played, color: 'bg-white/5' },
+                { label: 'Thắng', value: teamSummary.won, color: 'bg-green-500/20' },
+                { label: 'Hòa', value: teamSummary.drawn, color: 'bg-blue-500/20' },
+                { label: 'Thua', value: teamSummary.lost, color: 'bg-red-500/20' },
+                { label: 'BT', value: teamSummary.gf, color: 'bg-white/5' },
+                { label: 'BT', value: teamSummary.ga, color: 'bg-white/5' },
+                { label: 'Điểm', value: teamSummary.points, color: 'bg-pl-pink text-white shadow-lg' },
             ].map((stat, i) => (
                 <div key={i} className={`${stat.color} p-4 rounded-xl border border-white/10 text-center flex flex-col justify-center`}>
                     <span className="text-[10px] font-bold uppercase opacity-60 mb-1">{stat.label}</span>
@@ -165,29 +165,29 @@ export default function Stats() {
         </div>
 
         {loading ? (
-            <div className="text-center py-20 animate-pulse">Analyzing season data...</div>
+            <div className="text-center py-20 animate-pulse">Đang phân tích dữ liệu mùa giải...</div>
         ) : (
             <div className="bg-white text-pl-purple rounded-xl overflow-hidden shadow-2xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="bg-gray-100 border-b-2 border-pl-green font-heading text-lg uppercase sticky top-0 z-10">
                     <tr>
-                        <th className="p-4 w-16">Rank</th>
-                        <th className="p-4">Player</th>
+                        <th className="p-4 w-16">Hạng</th>
+                        <th className="p-4">Cầu thủ</th>
                         <th onClick={() => handleSort('matches')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            Played <SortIcon colKey="matches" sortConfig={sortConfig} />
+                            Số trận <SortIcon colKey="matches" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('goals')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            Goals <SortIcon colKey="goals" sortConfig={sortConfig} />
+                            Bàn thắng <SortIcon colKey="goals" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('assists')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            Assists <SortIcon colKey="assists" sortConfig={sortConfig} />
+                            Kiến tạo <SortIcon colKey="assists" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('motm')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
                             MOTM <SortIcon colKey="motm" sortConfig={sortConfig} />
                         </th>
                         <th onClick={() => handleSort('own_goals')} className="p-4 text-center cursor-pointer hover:bg-gray-200 select-none">
-                            OG <SortIcon colKey="own_goals" sortConfig={sortConfig} />
+                            Phản lưới <SortIcon colKey="own_goals" sortConfig={sortConfig} />
                         </th>
                     </tr>
                     </thead>
