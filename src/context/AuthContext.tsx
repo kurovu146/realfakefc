@@ -30,39 +30,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initAuth = async () => {
-        setLoading(true);
-        // Lấy session mới nhất từ server, không dùng cache
-        const { data: { session } } = await supabase.auth.getSession();
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        
-        if (currentUser) {
-            const allowed = await checkWhitelist(currentUser.email);
-            setIsWhitelisted(allowed);
+        try {
+            setLoading(true);
+            // Lấy session mới nhất từ server, không dùng cache
+            const { data: { session } } = await supabase.auth.getSession();
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+
+            if (currentUser) {
+                const allowed = await checkWhitelist(currentUser.email);
+                setIsWhitelisted(allowed);
+            }
+        } catch (err) {
+            console.error('Auth init error:', err);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-          const allowed = await checkWhitelist(currentUser.email);
-          setIsWhitelisted(allowed);
-      } else {
-          setIsWhitelisted(false);
-      }
+      try {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
 
-      if (event === 'SIGNED_OUT') {
-          // Force clear local cache
-          setUser(null);
-          setIsWhitelisted(false);
+        if (currentUser) {
+            const allowed = await checkWhitelist(currentUser.email);
+            setIsWhitelisted(allowed);
+        } else {
+            setIsWhitelisted(false);
+        }
+
+        if (event === 'SIGNED_OUT') {
+            // Force clear local cache
+            setUser(null);
+            setIsWhitelisted(false);
+        }
+      } catch (err) {
+        console.error('Auth state change error:', err);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
