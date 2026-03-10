@@ -14,17 +14,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!email) return false;
     if (email === ADMIN_EMAIL) return true;
 
-    // Thêm timestamp vào query để tránh cache 304
     const { data, error } = await supabase
       .from('players')
       .select('email')
       .eq('email', email)
       .maybeSingle();
-    
+
     if (error) {
-        console.error('Whitelist check error:', error);
+        console.error('[Auth] Whitelist check error:', error);
         return false;
     }
+    console.log('[Auth] Whitelist check:', email, '→', !!data);
     return !!data;
   };
 
@@ -32,17 +32,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
         try {
             setLoading(true);
-            // Lấy session mới nhất từ server, không dùng cache
+            console.log('[Auth] initAuth started');
             const { data: { session } } = await supabase.auth.getSession();
             const currentUser = session?.user ?? null;
+            console.log('[Auth] getSession:', currentUser?.email ?? 'no session');
             setUser(currentUser);
 
             if (currentUser) {
                 const allowed = await checkWhitelist(currentUser.email);
                 setIsWhitelisted(allowed);
             }
+            console.log('[Auth] initAuth done');
         } catch (err) {
-            console.error('Auth init error:', err);
+            console.error('[Auth] initAuth error:', err);
         } finally {
             setLoading(false);
         }
@@ -52,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
+        console.log('[Auth] onAuthStateChange:', event, session?.user?.email ?? 'no user');
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
