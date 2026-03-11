@@ -3,6 +3,7 @@ export interface Player {
   name: string;
   number: number;
   position: 'Thủ môn' | 'Hậu vệ' | 'Tiền vệ' | 'Tiền đạo' | 'Quản lý';
+  role: 'admin' | 'member';
   status?: 'Active' | 'Injured';
   nickname?: string;
   email?: string;

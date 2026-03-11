@@ -11,6 +11,7 @@ CREATE TABLE players (
   dob DATE,
   strengths TEXT,
   weaknesses TEXT,
+  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 

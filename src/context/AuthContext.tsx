@@ -3,28 +3,26 @@ import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { AuthContext } from './AuthContextValue';
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isWhitelisted, setIsWhitelisted] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'member' | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkWhitelist = async (email: string | undefined) => {
-    if (!email) return false;
-    if (email === ADMIN_EMAIL) return true;
+  const checkWhitelist = async (email: string | undefined): Promise<{ allowed: boolean; role: 'admin' | 'member' | null }> => {
+    if (!email) return { allowed: false, role: null };
 
     const { data, error } = await supabase
       .from('players')
-      .select('email')
+      .select('email, role')
       .eq('email', email)
       .maybeSingle();
 
     if (error) {
         console.error('Whitelist check error:', error);
-        return false;
+        return { allowed: false, role: null };
     }
-    return !!data;
+    return { allowed: !!data, role: data?.role ?? null };
   };
 
   useEffect(() => {
@@ -36,8 +34,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(currentUser);
 
             if (currentUser) {
-                const allowed = await checkWhitelist(currentUser.email);
+                const { allowed, role } = await checkWhitelist(currentUser.email);
                 setIsWhitelisted(allowed);
+                setUserRole(role);
             }
         } catch (err) {
             console.error('[Auth] initAuth error:', err);
@@ -54,16 +53,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentUser);
 
         if (currentUser) {
-            const allowed = await checkWhitelist(currentUser.email);
+            const { allowed, role } = await checkWhitelist(currentUser.email);
             setIsWhitelisted(allowed);
+            setUserRole(role);
         } else {
             setIsWhitelisted(false);
+            setUserRole(null);
         }
 
         if (event === 'SIGNED_OUT') {
             // Force clear local cache
             setUser(null);
             setIsWhitelisted(false);
+            setUserRole(null);
         }
       } catch (err) {
         console.error('Auth state change error:', err);
@@ -102,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = userRole === 'admin';
 
   return (
     <AuthContext.Provider value={{ user, isAdmin, isWhitelisted, loading, loginWithGoogle, logout }}>
