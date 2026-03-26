@@ -2,10 +2,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
 
 export default function Login() {
   const { loginWithGoogle, user, isWhitelisted, loading: authLoading, logout } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [loadingTooLong, setLoadingTooLong] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +15,22 @@ export default function Login() {
           navigate('/');
       }
   }, [user, isWhitelisted, navigate]);
+
+  // Nếu loading quá 5s, hiện nút retry
+  useEffect(() => {
+    if (!authLoading) {
+      setLoadingTooLong(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingTooLong(true), 5000);
+    return () => clearTimeout(timer);
+  }, [authLoading]);
+
+  const handleForceRetry = async () => {
+    await supabase.auth.signOut();
+    localStorage.clear();
+    window.location.reload();
+  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -24,7 +42,22 @@ export default function Login() {
     }
   };
 
-  if (authLoading) return <div className="text-center py-20 font-heading">Đang xác minh danh tính...</div>;
+  if (authLoading) return (
+    <div className="text-center py-20">
+      <p className="font-heading mb-4">Đang xác minh danh tính...</p>
+      {loadingTooLong && (
+        <div className="mt-4">
+          <p className="text-sm text-gray-500 mb-3">Xác minh lâu hơn bình thường.</p>
+          <button
+            onClick={handleForceRetry}
+            className="text-sm text-pl-purple underline hover:text-pl-pink cursor-pointer"
+          >
+            Thử đăng nhập lại
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   // Trường hợp Đã Login Google nhưng KHÔNG nằm trong Whitelist
   if (user && !isWhitelisted) {
